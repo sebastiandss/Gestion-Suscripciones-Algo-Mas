@@ -1,0 +1,36 @@
+<div class="dashboard-grid">
+    <div class="card main-chart">
+        <div class="card-header">
+            <span class="card-title">Diagrama de actividad</span>
+            <p class="card-subtitle">Análisis de consumo mensual</p>
+        </div>
+        <div class="placeholder-content">DIAGRAMA</div>
+    </div>
+    <div class="card sidebar-info">
+        <div class="card-header">
+            <span class="card-title">Próximos pagos</span>
+            <p class="card-subtitle">Calendario de facturación</p>
+        </div>
+        <div class="placeholder-content">PAGOS</div>
+    </div>
+</div>
+
+<style>
+    .dashboard-grid { display: flex; gap: 24px; width: 100%; }
+    .card {
+        background-color: #222222; border-radius: 30px; padding: 30px;
+        display: flex; flex-direction: column; height: 320px;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid rgba(255, 255, 255, 0.03); flex: 1; cursor: pointer;
+    }
+    .main-chart { flex: 6.5; }
+    .sidebar-info { flex: 3.5; }
+    .card:hover { transform: translateY(-10px); background-color: #282828; border-color: rgba(59, 130, 246, 0.3); }
+    .card-title { font-size: 1.1rem; font-weight: 600; color: white; }
+    .card-subtitle { font-size: 0.8rem; color: #555; margin-top: 5px; }
+    .placeholder-content { 
+        flex: 1; border-radius: 22px; background: rgba(0, 0, 0, 0.2); 
+        display: flex; align-items: center; justify-content: center; 
+        margin-top: 20px; color: #333; font-weight: 800; font-size: 0.7rem; letter-spacing: 2px; 
+    }
+</style>

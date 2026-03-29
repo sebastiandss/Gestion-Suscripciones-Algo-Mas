@@ -1,0 +1,20 @@
+---
+import StatCard from './StatCard.astro';
+---
+
+<div class="stats-container">
+    <StatCard label="Gastos Mensuales" value="$145.20" iconColor="blue" />
+    <StatCard label="Suscripciones Activas" value="12" iconColor="green" /> 
+    <StatCard label="Próximo Pago" value="Mar 25" iconColor="purple" />
+    <StatCard label="Presupuesto Usado" value="65%" iconColor="orange" />
+</div>
+
+<style>
+    .stats-container {
+        display: flex;
+        gap: 20px;
+        width: 100%;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+</style>

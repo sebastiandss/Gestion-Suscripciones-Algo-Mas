@@ -1,0 +1,46 @@
+---
+import MainLayout from '../layout/MainLayout.astro';
+import FilterBar from '../components/FilterBar.astro';
+import SubscriptionsGrid from '../components/SubscriptionsGrid.astro';
+
+const allSubscriptions = [
+    { name: "Spotify", price: "$9.99", period: "Mensual", category: "Música", date: "15 Abr", status: "Activo", serviceClass: "spotify" },
+    { name: "Netflix", price: "$15.90", period: "Mensual", category: "Streaming", date: "02 Abr", status: "Activo", serviceClass: "netflix" },
+    { name: "YouTube", price: "$11.99", period: "Mensual", category: "Video", date: "20 Abr", status: "Pausado", serviceClass: "youtube" },
+    { name: "Disney+", price: "$7.99", period: "Mensual", category: "Streaming", date: "12 Abr", status: "Activo", serviceClass: "disney" },
+];
+---
+
+<MainLayout>
+    <div class="header-section">
+        <div class="title-info">
+            <h1>Suscripciones</h1>
+            <p>Monitoreo de gastos fijos</p>
+        </div>
+    </div>
+
+    <FilterBar />
+
+    <SubscriptionsGrid subscriptions={allSubscriptions} />
+</MainLayout>
+
+<style>
+    .header-section {
+        /* Aumentamos el margen inferior para separar el texto de la barra de filtros */
+        margin-bottom: 20px; 
+    }
+
+    .title-info h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 8px;
+    }
+
+    .title-info p {
+        color: #666;
+        font-size: 1rem;
+        /* Un poco de tracking para que se vea más limpio */
+        letter-spacing: 0.5px; 
+    }
+</style>

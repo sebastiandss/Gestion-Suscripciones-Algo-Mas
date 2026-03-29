@@ -1,0 +1,102 @@
+---
+const { name, price, period, category, date, status, serviceClass } = Astro.props;
+---
+
+<div class="detailed-card">
+    <div class="card-content">
+        <div class={`service-icon ${serviceClass}`}></div>
+        <div class="info">
+            <h3>{name}</h3>
+            <p>{category} • {price}</p>
+        </div>
+        <div class="extra-details">
+            <div class="item"><span>Pago:</span> {date}</div>
+            <div class="item"><span>Estado:</span> {status}</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .detailed-card {
+        background: #222;
+        padding: 24px;
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    
+    .service-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 16px;
+    }
+    .detailed-card {
+        background: #222;
+        padding: 20px;
+        border-radius: 24px;
+        border: 1px solid rgba(255,255,255,0.03);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    /* --- ROTACIÓN DEL LOGO AL POSICIONAR EL MOUSE --- */
+    .detailed-card:hover {
+        background: #282828;
+        transform: translateY(-5px);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .detailed-card:hover .service-icon {
+        transform: rotate(-12deg) scale(1.1);
+    }
+
+    .card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .service-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .info h3 { font-size: 1.1rem; color: white; margin-bottom: 4px; }
+    .info p { font-size: 0.85rem; color: #666; }
+
+    .extra-details {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        font-size: 0.8rem;
+        color: #aaa;
+    }
+
+    .extra-details span { color: #555; font-weight: 600; margin-right: 5px; }
+
+    /* --- ADAPTACIÓN A VISTA RECTANGULAR (LISTA) --- */
+    :global(.list-layout) .card-content {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    :global(.list-layout) .extra-details {
+        border-top: none;
+        padding-top: 0;
+        margin-left: auto;
+        gap: 40px;
+    }
+
+    /* Colores de Marca */
+    .spotify { background: #1DB954; }
+    .netflix { background: #E50914; }
+    .youtube { background: #FF0000; }
+    .disney { background: #001244; }
+    .prime { background: #00A8E1; }
+    .hbo { background: #5d00ff; }
+    .steam { background: #171a21; }
+</style>

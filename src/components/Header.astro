@@ -1,0 +1,86 @@
+<header class="top-header">
+    <div class="title-area">
+        <h2>Dashboard</h2>
+        <div class="status-dot"></div>
+    </div>
+
+    <div class="actions">
+        <div class="date-pill">Marzo 2025</div>
+        <button class="btn-new">+ Nueva suscripción</button>
+    </div>
+</header>
+
+<style>
+    .top-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 30px 40px;
+        /* Fondo transparente para que herede el gris del layout */
+        background-color: transparent; 
+    }
+
+    .title-area {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .title-area h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        background-color: #22c55e;
+        border-radius: 50%;
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+        margin-top: 5px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 15px;
+    }
+
+    .date-pill {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+    }
+
+    .btn-new {
+        background: #ffffff;
+        color: #000000;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .btn-new:hover {
+        transform: scale(1.05);
+    }
+    .btn-add {
+        background-color: white;
+        color: black;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .btn-add:hover {
+        background-color: #e0e0e0;
+        transform: scale(1.05);
+    }
+</style>

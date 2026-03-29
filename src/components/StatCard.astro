@@ -1,0 +1,62 @@
+---
+const { label, value, iconColor } = Astro.props;
+---
+<div class="stat-card">
+    <div class="stat-header">
+        <div class={`stat-dot ${iconColor}`}></div>
+        <span class="stat-label">{label}</span>
+    </div>
+    <div class="stat-value">{value}</div>
+</div>
+
+<style>
+    .stat-card {
+        background-color: #222222;
+        padding: 20px 25px;
+        border-radius: 22px;
+        flex: 1;
+        min-width: 200px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        transition: all 0.3s ease;
+        cursor: default;
+    }
+
+    .stat-card:hover {
+        background-color: #282828;
+        transform: translateY(-3px);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .stat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    .stat-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    /* Colores dinámicos para los puntos */
+    .blue { background-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+    .green { background-color: #22c55e; box-shadow: 0 0 10px #22c55e; }
+    .purple { background-color: #a855f7; box-shadow: 0 0 10px #a855f7; }
+    .orange { background-color: #f97316; box-shadow: 0 0 10px #f97316; }
+</style>

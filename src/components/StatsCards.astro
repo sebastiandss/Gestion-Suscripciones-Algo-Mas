@@ -1,0 +1,87 @@
+---
+const { label, value, color, serviceClass } = Astro.props;
+---
+
+<div class={`stat-card ${serviceClass}`}>
+    <div class="stat-header">
+        <div class={`stat-dot ${color}`}></div>
+        <span class="stat-label">{label}</span>
+    </div>
+    <div class="stat-value">{value}</div>
+</div>
+
+<style>
+    /* Definición de la animación de rotación */
+    @keyframes rotateLogo {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(-10deg); }
+    }
+
+    .stat-card {
+        background-color: #222222;
+        padding: 20px 25px;
+        border-radius: 22px;
+        flex: 1;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        /* TRANSICIÓN: Crucial para la suavidad de todos los efectos */
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        cursor: pointer;
+        will-change: transform, box-shadow;
+    }
+
+    /* --- EFECTOS DE HOVER EN LA TARJETA --- */
+    .stat-card:hover {
+        background-color: #2a2a2a;
+        /* Interacción 1 y 2: Elevación y escalado sutil */
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    /* Interacción 3: El logo (stat-dot) gira un poco al hacer hover en la card */
+    .stat-card:hover .stat-dot {
+        animation: rotateLogo 0.3s ease-out forwards;
+    }
+
+    /* --- COLORES DE MARCA AL HOVER --- */
+    /* Spotify */
+    .spotify:hover {
+        border-color: rgba(29, 185, 84, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+                    0 0 15px rgba(29, 185, 84, 0.1);
+    }
+    .spotify:hover .stat-label { color: #1DB954; }
+
+    /* Netflix */
+    .netflix:hover {
+        border-color: rgba(229, 9, 20, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+                    0 0 15px rgba(229, 9, 20, 0.1);
+    }
+    .netflix:hover .stat-label { color: #E50914; }
+
+    /* ... puedes añadir los colores para YouTube, Prime, etc. de la misma forma ... */
+
+    /* --- ESTILOS BASE (se mantienen) --- */
+    .stat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    
+    .stat-dot { 
+        width: 8px; 
+        height: 8px; 
+        border-radius: 50%; 
+        transition: transform 0.3s ease-out; /* Transición para cuando el mouse sale */
+    }
+    
+    .blue { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+    .green { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+    .purple { background: #a855f7; box-shadow: 0 0 10px #a855f7; }
+    .orange { background: #f97316; box-shadow: 0 0 10px #f97316; }
+
+    .stat-label { 
+        font-size: 0.75rem; 
+        color: #666; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        letter-spacing: 1px;
+        transition: color 0.3s ease; /* Suavizar el cambio de color de la etiqueta */
+    }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: white; }
+</style>

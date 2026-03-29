@@ -1,0 +1,170 @@
+---
+import ViewControls from './ViewControls.astro';
+---
+
+<div class="filter-toolbar">
+    <div class="status-group" id="status-filter-group">
+        <button class="filter-btn active" data-status="todos">Todos</button>
+        <button class="filter-btn" data-status="activo">Activos</button>
+        <button class="filter-btn" data-status="pausado">Pausados</button>
+        <button class="filter-btn" data-status="vencido">Vencidos</button>
+    </div>
+
+    <div class="actions-group">
+        <div class="search-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="Buscar suscripción..." id="sub-search" />
+        </div>
+        
+        <div class="vertical-divider"></div>
+        
+        <div class="controls-wrapper">
+            <ViewControls />
+        </div>
+    </div>
+</div>
+
+<script>
+    // Lógica para manejar la selección de los filtros de estado
+    const filterContainer = document.getElementById('status-filter-group');
+    
+    if (filterContainer) {
+        const buttons = filterContainer.querySelectorAll('.filter-btn');
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 1. Quitar la clase 'active' de todos los botones
+                buttons.forEach(b => b.classList.remove('active'));
+                
+                // 2. Añadir la clase 'active' al botón clickeado
+                btn.classList.add('active');
+                
+                // Nota: Aquí es donde más adelante podrías filtrar las cajas 
+                // usando el valor de btn.getAttribute('data-status')
+                console.log("Filtrando por:", btn.getAttribute('data-status'));
+            });
+        });
+    }
+</script>
+
+<style>
+    .filter-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.02);
+        padding: 8px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 35px;
+        backdrop-filter: blur(10px);
+    }
+
+    .status-group {
+        display: flex;
+        gap: 5px;
+    }
+
+    .filter-btn {
+        background: transparent;
+        border: none;
+        color: #666;
+        padding: 8px 16px;
+        border-radius: 14px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+        color: #aaa;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .filter-btn.active {
+        background: #2563eb;
+        color: white;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .actions-group {
+        display: flex;
+        align-items: center;
+    }
+
+    .search-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        color: #444;
+    }
+
+    #sub-search {
+        background: #1a1a1a;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 10px 12px 10px 40px;
+        color: white;
+        font-size: 0.85rem;
+        width: 200px;
+        transition: all 0.3s ease;
+    }
+
+    #sub-search:focus {
+        outline: none;
+        border-color: #2563eb;
+        background: #202020;
+        width: 240px;
+    }
+
+    .vertical-divider {
+        width: 1px;
+        height: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 0 15px;
+    }
+
+    .controls-wrapper {
+        margin-left: 5px;
+    }
+    .filter-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.02);
+        /* Aumentamos el padding lateral para que el contenido no toque los bordes */
+        padding: 10px 20px; 
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 35px;
+        backdrop-filter: blur(10px);
+    }
+
+    .actions-group {
+        display: flex;
+        align-items: center;
+        /* Separación general entre buscador, divisor y controles */
+        gap: 20px; 
+    }
+
+    .vertical-divider {
+        width: 1px;
+        height: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        /* Esto aleja el buscador de la línea y la línea de los botones */
+        margin: 0 10px; 
+    }
+
+    .controls-wrapper {
+        /* Un pequeño margen extra a la derecha para que no quede pegado al final de la barra */
+        margin-right: 5px; 
+        display: flex;
+        align-items: center;
+    }
+</style>

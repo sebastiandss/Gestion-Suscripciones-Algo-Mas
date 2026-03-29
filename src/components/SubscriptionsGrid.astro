@@ -1,0 +1,79 @@
+---
+import DetailedSubCard from './DetailedSubCard.astro';
+const { subscriptions } = Astro.props;
+---
+
+<div class="subs-container grid-layout" id="subs-container">
+    {subscriptions.map((sub) => (
+        <div class="flip-card" id={`card-${sub.serviceClass}`}>
+            <DetailedSubCard {...sub} />
+        </div>
+    ))}
+</div>
+
+<script>
+    const container = document.getElementById('subs-container');
+
+    window.addEventListener('subscription-added', (e: any) => {
+        const data = e.detail;
+        
+        // Creamos el contenedor 'flip-card'
+        const flipCard = document.createElement('div');
+        flipCard.className = 'flip-card';
+        flipCard.id = `card-${Date.now()}`; // ID único basado en tiempo
+
+        // Estructura idéntica a tu componente Astro
+        flipCard.innerHTML = `
+            <div class="detailed-card">
+                <div class="card-content">
+                    <div class="service-icon ${data.serviceClass}"></div>
+                    <div class="text-info">
+                        <h3>${data.name}</h3>
+                        <p>${data.category} • ${data.price} <small>/${data.period}</small></p>
+                    </div>
+                    <div class="meta-info">
+                        <div class="badge">${data.status}</div>
+                        <div class="date">Pago: ${data.date}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (container) {
+            // Lo añadimos al inicio de la lista
+            container.prepend(flipCard);
+            
+            // Forzamos un pequeño delay para que la animación de entrada funcione
+            flipCard.style.opacity = '0';
+            flipCard.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                flipCard.style.transition = 'all 0.5s ease';
+                flipCard.style.opacity = '1';
+                flipCard.style.transform = 'translateY(0)';
+            }, 10);
+        }
+    });
+</script>
+
+<style>
+    .subs-container {
+        display: grid;
+        gap: 25px;
+        width: 100%;
+    }
+
+    /* Diseño de Cuadrícula (Default) */
+    .grid-layout {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+
+    /* Diseño Rectangular (Lista) */
+    .list-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .flip-card {
+        will-change: transform;
+    }
+</style>

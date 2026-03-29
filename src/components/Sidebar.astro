@@ -1,0 +1,193 @@
+---
+// Lógica para detectar la página activa (opcional pero recomendado)
+const pathname = new URL(Astro.request.url).pathname;
+const currentPath = pathname.slice(1); // Quita la barra inicial
+---
+
+<aside class="sidebar" id="sidebar">
+    <div class="logo-section">
+        <div class="logo-icon">S</div>
+        <div class="logo-text">
+            <h1>SubTrack</h1>
+            <span>v1.0</span>
+        </div>
+    </div>
+
+    <nav class="menu">
+        <p class="menu-label">PRINCIPAL</p>
+        <ul>
+            <a href="/" class="nav-link">
+                <li class={currentPath === "" ? "active" : ""}>
+                    <div class="icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                    </div>
+                    <span class="nav-text">Dashboard</span>
+                </li>
+            </a>
+            
+            <a href="/suscripciones" class="nav-link">
+                <li class={currentPath === "suscripciones" ? "active" : ""}>
+                    <div class="icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <span class="nav-text">Suscripciones</span>
+                    <span class="badge">12</span>
+                </li>
+            </a>
+        </ul>
+    </nav>
+
+    <div class="user-profile">
+        <div class="avatar">JD</div>
+        <div class="user-info">
+            <p class="name">Juan Díaz</p>
+            <p class="role">Perfil</p>
+        </div>
+    </div>
+</aside>
+
+<style>
+    .sidebar {
+        width: 80px;
+        background-color: #121212;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 15px;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        white-space: nowrap;
+        height: 100vh;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar:hover {
+        width: 260px;
+    }
+
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 40px;
+    }
+
+    .logo-icon {
+        min-width: 50px;
+        height: 50px;
+        background-color: #2563eb;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: white;
+    }
+
+    .logo-text h1 { font-size: 1.1rem; color: white; margin: 0; }
+    .logo-text span { font-size: 0.7rem; color: #444; }
+
+    /* --- Visibilidad de elementos --- */
+    .logo-text, .nav-text, .menu-label, .user-info, .badge {
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .sidebar:hover .logo-text, 
+    .sidebar:hover .nav-text, 
+    .sidebar:hover .menu-label, 
+    .sidebar:hover .user-info,
+    .sidebar:hover .badge {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* --- Navegación --- */
+    .nav-link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .icon-wrapper {
+        min-width: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .menu ul { list-style: none; padding: 0; }
+    
+    .menu li {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-radius: 12px;
+        color: #999;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .menu li:hover { background: rgba(255, 255, 255, 0.03); color: white; }
+    
+    .menu li.active { 
+        background: rgba(37, 99, 235, 0.1); 
+        color: #3b82f6; 
+    }
+
+    .menu-label {
+        font-size: 0.7rem;
+        color: #555;
+        margin-bottom: 15px;
+        padding-left: 15px;
+        font-weight: 700;
+    }
+
+    .nav-text {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .badge {
+        margin-left: auto;
+        margin-right: 15px;
+        background: rgba(37, 99, 235, 0.2);
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        color: #3b82f6;
+    }
+
+    /* --- Perfil --- */
+    .user-profile {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .avatar {
+        min-width: 50px;
+        height: 50px;
+        background: #2563eb;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+    }
+    a {
+        text-decoration: none;
+        color: inherit; /* Esto hace que el enlace use el color de su padre */
+        outline: none;
+    }   
+    a:visited {
+        color: inherit;
+    }
+    .user-info { padding-left: 12px; }
+    .name { font-size: 0.9rem; font-weight: 600; color: white; margin: 0; }
+    .role { font-size: 0.75rem; color: #555; margin: 0; }
+</style>

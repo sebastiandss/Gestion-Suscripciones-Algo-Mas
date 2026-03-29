@@ -1,0 +1,49 @@
+---
+const { name, price, serviceClass } = Astro.props;
+---
+<div class="sub-card">
+    <div class={`sub-icon ${serviceClass}`}></div>
+    <div class="sub-info">
+        <span class="sub-name">{name}</span>
+        <span class="sub-price">{price}</span>
+    </div>
+</div>
+
+<style>
+    .sub-card {
+        min-width: 240px;
+        background-color: #222222;
+        padding: 22px;
+        border-radius: 26px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        flex-shrink: 0;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        cursor: pointer;
+    }
+
+    .sub-card:hover {
+        background-color: #282828;
+        transform: translateY(-5px) scale(1.02);
+        border-color: rgba(59, 130, 246, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .sub-icon { width: 50px; height: 50px; border-radius: 14px; transition: transform 0.3s ease; }
+    .sub-card:hover .sub-icon { transform: rotate(-10deg); }
+
+    .spotify { background: #1DB954; }
+    .netflix { background: #E50914; }
+    .youtube { background: #FF0000; }
+    .icloud { background: #007AFF; }
+    .disney { background: #001244; }
+    .hbo { background: #5d00ff; }
+    .prime { background: #00A8E1; }
+    .steam { background: #171a21; }
+
+    .sub-name { font-size: 1rem; font-weight: 600; color: white; transition: color 0.3s; }
+    .sub-card:hover .sub-name { color: #3b82f6; }
+    .sub-price { font-size: 0.85rem; color: #777; }
+</style>

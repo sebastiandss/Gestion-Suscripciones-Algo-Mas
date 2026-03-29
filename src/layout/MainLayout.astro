@@ -1,0 +1,85 @@
+---
+import Sidebar from '../components/Sidebar.astro';
+import Header from '../components/Header.astro';
+import AddSubscriptionModal from '../components/AddSubscriptionModal.astro';
+---
+
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>SubTrack</title>
+</head>
+<body>
+    <div class="app-container">
+        <Sidebar />
+        <div class="main-wrapper">
+            <Header />
+            <main class="content-area">
+                <slot />
+            </main>
+        </div>
+    </div>
+    <AddSubscriptionModal />
+
+    <style is:global>
+        /* --- RESET Y FUENTES --- */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        
+        /* --- OCULTAR SCROLLBAR GLOBAL --- */
+        /* Chrome, Safari, Edge y Opera */
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Firefox */
+        html, body {
+            scrollbar-width: none;
+            -ms-overflow-style: none; /* IE y Edge */
+        }
+
+        body { 
+            background-color: #121212; 
+            color: white; 
+            overflow: hidden; /* Evita scroll en el body principal */
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- ESTRUCTURA --- */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            background-color: #1a1a1a;
+            border-radius: 0; 
+            min-width: 0;
+            position: relative;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 10px 40px;
+            overflow-y: auto; /* Permite scroll interno si el contenido crece */
+            overflow-x: hidden; /* Evita fugas horizontales */
+            /* Refuerzo para asegurar que el scroll interno también sea invisible */
+            scrollbar-width: none; 
+        }
+
+        .content-area::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</body>
+</html>

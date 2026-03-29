@@ -1,0 +1,158 @@
+---
+---
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Nueva Suscripción</h2>
+            <button id="close-modal" class="close-btn">&times;</button>
+        </div>
+
+        <form id="add-sub-form" class="modal-form">
+            <div class="input-group">
+                <label>Nombre del servicio</label>
+                <input type="text" placeholder="Ej. Disney+, Gym, Notion..." id="sub-name" required />
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Precio</label>
+                    <input type="text" placeholder="$0.00" id="sub-price" required />
+                </div>
+                <div class="input-group">
+                    <label>Periodo</label>
+                    <select id="sub-period">
+                        <option value="Mensual">Mensual</option>
+                        <option value="Anual">Anual</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Color de marca</label>
+                <div class="color-picker">
+                    <label class="color-option"><input type="radio" name="color" value="blue" checked /><span class="dot blue"></span></label>
+                    <label class="color-option"><input type="radio" name="color" value="green" /><span class="dot green"></span></label>
+                    <label class="color-option"><input type="radio" name="color" value="purple" /><span class="dot purple"></span></label>
+                    <label class="color-option"><input type="radio" name="color" value="orange" /><span class="dot orange"></span></label>
+                    <label class="color-option"><input type="radio" name="color" value="red" /><span class="dot red"></span></label>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Guardar Suscripción</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: none; /* Oculto por defecto */
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.open { display: flex; opacity: 1; }
+
+    .modal-content {
+        background: #1a1a1a;
+        width: 90%;
+        max-width: 450px;
+        padding: 30px;
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.open .modal-content { transform: translateY(0); }
+
+    .modal-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .modal-header h2 { font-size: 1.4rem; color: white; }
+    
+    .close-btn {
+        background: none; border: none; color: #555;
+        font-size: 2rem; cursor: pointer; transition: 0.2s;
+    }
+    .close-btn:hover { color: white; }
+
+    .modal-form { display: flex; flex-direction: column; gap: 20px; }
+
+    .input-group { display: flex; flex-direction: column; gap: 8px; }
+    .input-group label { font-size: 0.8rem; color: #666; font-weight: 600; text-transform: uppercase; }
+
+    input, select {
+        background: #222; border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 12px 15px; border-radius: 12px; color: white; font-size: 0.9rem;
+    }
+
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+    /* Color Picker */
+    .color-picker { display: flex; gap: 15px; padding: 5px 0; }
+    .color-option input { display: none; }
+    .dot {
+        width: 30px; height: 30px; border-radius: 50%; display: block;
+        cursor: pointer; border: 3px solid transparent; transition: 0.2s;
+    }
+    .color-option input:checked + .dot { border-color: white; transform: scale(1.1); }
+
+    .blue { background: #3b82f6; }
+    .green { background: #22c55e; }
+    .purple { background: #a855f7; }
+    .orange { background: #f97316; }
+    .red { background: #ef4444; }
+
+    .submit-btn {
+        margin-top: 10px; background: #2563eb; color: white; border: none;
+        padding: 14px; border-radius: 14px; font-weight: 600; cursor: pointer;
+        transition: 0.3s;
+    }
+    .submit-btn:hover { background: #1d4ed8; transform: translateY(-2px); }
+</style>
+
+<script>
+    const modal = document.getElementById('modal-overlay');
+    const form = document.getElementById('add-sub-form') as HTMLFormElement;
+    const openBtn = document.querySelector('.btn-add');
+    const closeBtn = document.getElementById('close-modal');
+
+    // Abrir/Cerrar
+    openBtn?.addEventListener('click', () => modal?.classList.add('open'));
+    closeBtn?.addEventListener('click', () => modal?.classList.remove('open'));
+
+    // LÓGICA DE ENVÍO
+    form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Extraer datos del formulario
+        const formData = new FormData(form);
+        const newSub = {
+            name: (document.getElementById('sub-name') as HTMLInputElement).value,
+            price: (document.getElementById('sub-price') as HTMLInputElement).value,
+            period: (document.getElementById('sub-period') as HTMLSelectElement).value,
+            serviceClass: formData.get('color'), // Usamos el color como clase
+            category: "Manual",
+            date: "Hoy",
+            status: "Activo"
+        };
+
+        // Disparar evento personalizado con los datos
+        const event = new CustomEvent('subscription-added', { detail: newSub });
+        window.dispatchEvent(event);
+
+        // Limpiar y cerrar
+        form.reset();
+        modal?.classList.remove('open');
+    });
+</script>
