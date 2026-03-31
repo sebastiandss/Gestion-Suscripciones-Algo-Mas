@@ -1,122 +1,122 @@
 ---
-import SubscriptionCard from './SubscriptionCard.astro';
+/* src/components/SubscriptionCarousel.astro */
 ---
-
-<div class="carousel-header">
-    <h2 class="section-title">Tus Suscripciones</h2>
-</div>
-
 <div class="carousel-wrapper">
+    <button class="nav-arrow left" id="prevBtn" aria-label="Anterior">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+
     <div class="carousel-viewport">
         <div class="subscriptions-track" id="track">
-            <SubscriptionCard name="Spotify" price="$9.99/mes" serviceClass="spotify" />
-            <SubscriptionCard name="Netflix" price="$15.90/mes" serviceClass="netflix" />
-            <SubscriptionCard name="Max (HBO)" price="$14.99/mes" serviceClass="hbo" />
-            <SubscriptionCard name="Prime Video" price="$14.99/año" serviceClass="prime" />
-            <SubscriptionCard name="Disney+" price="$7.99/mes" serviceClass="disney" />
-            <SubscriptionCard name="YouTube" price="$11.99/mes" serviceClass="youtube" />
-            <SubscriptionCard name="Steam" price="Variable" serviceClass="steam" />
+            <div class="add-card-trigger" id="inline-add-btn">
+                <div class="plus-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                </div>
+                <span>Nueva suscripción</span>
+            </div>
+            <div id="dynamic-subs-container" style="display: flex; gap: 20px;"></div>
         </div>
     </div>
 
-    <button class="nav-arrow left" id="prevBtn" aria-label="Anterior">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-    </button>
     <button class="nav-arrow right" id="nextBtn" aria-label="Siguiente">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 </div>
 
 <script>
-    const track = document.getElementById('track');
-    const nextBtn = document.getElementById('nextBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    let pos = 0;
-    const step = 260; 
+    import { $subscriptions } from '../store/subsStore.js';
 
-    nextBtn?.addEventListener('click', () => {
-        const max = -(track.scrollWidth - track.parentElement.clientWidth);
-        pos -= step * 2;
-        if (pos < max) pos = max;
-        track.style.transform = `translateX(${pos}px)`;
-    });
+    const setupCarousel = () => {
+        const track = document.getElementById('track') as HTMLElement;
+        const container = document.getElementById('dynamic-subs-container');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const inlineAddBtn = document.getElementById('inline-add-btn');
 
-    prevBtn?.addEventListener('click', () => {
-        pos += step * 2;
-        if (pos > 0) pos = 0;
-        track.style.transform = `translateX(${pos}px)`;
-    });
+        let currentPos = 0;
+        const step = 260;
+
+        inlineAddBtn?.addEventListener('click', () => {
+            document.getElementById('modal-overlay')?.classList.add('is-active');
+        });
+
+        nextBtn?.addEventListener('click', () => {
+            if (!track) return;
+            const max = -(track.scrollWidth - track.parentElement!.clientWidth);
+            currentPos = Math.max(currentPos - step, max);
+            track.style.transform = `translateX(${currentPos}px)`;
+        });
+
+        prevBtn?.addEventListener('click', () => {
+            currentPos = Math.min(currentPos + step, 0);
+            track.style.transform = `translateX(${currentPos}px)`;
+        });
+
+        $subscriptions.subscribe((subs: any[]) => {
+            if (!container) return;
+
+            // ACTUALIZACIÓN AQUÍ: Envolvemos cada tarjeta en un <a>
+            container.innerHTML = subs.map(sub => `
+                <a href="/suscripciones" style="text-decoration: none; color: inherit; display: block;">
+                    <div class="sub-card">
+                        <div class="sub-icon ${sub.serviceClass}"></div>
+                        <div class="sub-info">
+                            <span class="sub-name">${sub.name}</span>
+                            <span class="sub-price">$${sub.price}</span>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+        });
+    };
+
+    setupCarousel();
+    document.addEventListener('astro:after-swap', setupCarousel);
 </script>
 
 <style>
-    /* Estilos para el encabezado de sección */
-    .carousel-header {
-        margin-bottom: 15px;
-        padding: 0 5px;
-    }
-    .section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #eee;
-    }
+    .carousel-wrapper { position: relative; width: 100%; display: flex; align-items: center; padding: 0 50px; }
+    .carousel-viewport { width: 100%; overflow: hidden; padding: 20px 0; }
+    .subscriptions-track { display: flex; gap: 20px; transition: transform 0.5s cubic-bezier(0.2, 1, 0.3, 1); will-change: transform; }
 
-    /* Estilos del contenedor principal */
-    .carousel-wrapper {
-        position: relative;
-        width: 100%;
-        margin-bottom: 35px;
-        display: flex; /* Cambiado para alinear elementos */
-        align-items: center;
-        /* Añadimos padding lateral para que las flechas tengan espacio */
-        padding: 0 45px; 
+    /* --- ESTILO CAJA AGREGAR --- */
+    .add-card-trigger {
+        min-width: 220px; height: 100px; background: rgba(255, 255, 255, 0.02);
+        border: 2px dashed rgba(255, 255, 255, 0.1); border-radius: 20px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 10px; cursor: pointer; transition: all 0.3s ease; color: #555; flex-shrink: 0;
     }
+    .add-card-trigger:hover { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.3); color: #3b82f6; transform: translateY(-5px); }
+    .plus-icon { background: rgba(255, 255, 255, 0.05); padding: 8px; border-radius: 50%; display: flex; }
 
-    .carousel-viewport {
-        width: 100%;
-        overflow: hidden; /* Importante para ocultar las tarjetas extra */
-        padding: 15px 5px; /* Espacio para las sombras del hover */
-    }
-
-    .subscriptions-track {
-        display: flex;
-        gap: 20px;
-        transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); /* Animación suave */
-        will-change: transform;
-    }
-
-    /* Estilos para las flechas de navegación */
+    /* --- FLECHAS (Tu diseño original) --- */
     .nav-arrow {
-        position: absolute; /* Posicionamiento respecto a .carousel-wrapper */
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        top: 50%; /* Centrado vertical */
-        transform: translateY(-50%);
-        background: rgba(255, 255, 255, 0.03); /* Fondo sutil */
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        color: #666;
-        z-index: 10;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        position: absolute; width: 44px; height: 44px; border-radius: 50%;
+        background: #1a1a1a; border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white; display: flex; align-items: center; justify-content: center;
+        cursor: pointer; z-index: 10; transition: 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
+    .nav-arrow:hover { background: #3b82f6; border-color: #3b82f6; transform: scale(1.1); }
+    .left { left: 0; } .right { right: 0; }
 
-    /* Efectos hover para las flechas */
-    .nav-arrow:hover {
-        background: rgba(59, 130, 246, 0.1);
-        border-color: rgba(59, 130, 246, 0.2);
-        color: #3b82f6;
-        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    /* --- ESTILOS DINÁMICOS Y ANIMACIONES (Tu diseño original) --- */
+    :global(.sub-card) {
+        min-width: 240px; background-color: #222222; padding: 22px; border-radius: 26px;
+        display: flex; align-items: center; gap: 15px; border: 1px solid rgba(255, 255, 255, 0.03);
+        flex-shrink: 0; cursor: pointer; position: relative;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); will-change: transform, box-shadow;
     }
+    :global(.sub-card:hover) {
+        background-color: #282828; transform: translateY(-5px) scale(1.02);
+        border-color: rgba(59, 130, 246, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(59, 130, 246, 0.1);
+    }
+    :global(.sub-icon) { width: 50px; height: 50px; border-radius: 14px; transition: transform 0.3s ease-out; }
+    :global(.sub-card:hover .sub-icon) { transform: rotate(-10deg); }
+    :global(.sub-name) { font-size: 1rem; font-weight: 600; color: white; display: block; transition: color 0.3s ease; }
+    :global(.sub-card:hover .sub-name) { color: #3b82f6; }
+    :global(.sub-price) { font-size: 0.85rem; color: #777; }
 
-    /* Posicionamiento específico (izquierda/derecha) */
-    .left {
-        left: 0; /* Pegado al borde izquierdo del wrapper */
-    }
-
-    .right {
-        right: 0; /* Pegado al borde derecho del wrapper */
-    }
+    /* Colores */
+    :global(.blue) { background: #3b82f6; } :global(.green) { background: #22c55e; } :global(.purple) { background: #a855f7; } :global(.red) { background: #ef4444; } :global(.orange) { background: #f97316; }
 </style>

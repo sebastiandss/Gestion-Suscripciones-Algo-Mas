@@ -1,7 +1,7 @@
 ---
-// Lógica para detectar la página activa (opcional pero recomendado)
+// Lógica para detectar la página activa
 const pathname = new URL(Astro.request.url).pathname;
-const currentPath = pathname.slice(1); // Quita la barra inicial
+const currentPath = pathname.slice(1).replace(/\/$/, ""); 
 ---
 
 <aside class="sidebar" id="sidebar">
@@ -31,20 +31,53 @@ const currentPath = pathname.slice(1); // Quita la barra inicial
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </div>
                     <span class="nav-text">Suscripciones</span>
-                    <span class="badge">12</span>
+                    <div class="badge-wrapper">
+                        <span class="badge" id="subs-count-badge">0</span>
+                    </div>
+                </li>
+            </a>
+        </ul>
+        <p class="menu-label">PRESUPUESTO</p>
+        <ul>
+            <a href="/presupuesto" class="nav-link">
+                <li class={currentPath === "presupuesto" ? "active" : ""}>
+                    <div class="icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/>
+                            <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>
+                        </svg>
+                    </div>
+                    <span class="nav-text">Presupuesto</span>
                 </li>
             </a>
         </ul>
     </nav>
 
-    <div class="user-profile">
-        <div class="avatar">JD</div>
-        <div class="user-info">
-            <p class="name">Juan Díaz</p>
-            <p class="role">Perfil</p>
+    <a href="/perfil" class="nav-link" style="margin-top: auto;">
+        <div class={`user-profile ${currentPath === "perfil" ? "active-profile" : ""}`}>
+            <div class="avatar">JD</div>
+            <div class="user-info">
+                <p class="name">Juan Díaz</p>
+                <p class="role">Perfil</p>
+            </div>
         </div>
-    </div>
+    </a>
 </aside>
+
+<script>
+    import { $subscriptions } from '../store/subsStore.js';
+    const updateBadge = () => {
+        const badge = document.getElementById('subs-count-badge');
+        $subscriptions.subscribe(subs => {
+            if (badge) {
+                badge.textContent = subs.length.toString();
+                badge.style.display = subs.length === 0 ? 'none' : 'inline-flex';
+            }
+        });
+    };
+    updateBadge();
+    document.addEventListener('astro:after-swap', updateBadge);
+</script>
 
 <style>
     .sidebar {
@@ -58,66 +91,15 @@ const currentPath = pathname.slice(1); // Quita la barra inicial
         white-space: nowrap;
         height: 100vh;
         border-right: 1px solid rgba(255, 255, 255, 0.05);
+        box-sizing: border-box;
     }
 
-    .sidebar:hover {
-        width: 260px;
-    }
+    .sidebar:hover { width: 260px; }
 
-    .logo-section {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 40px;
-    }
+    /* Mantenemos tus iconos y textos */
+    .icon-wrapper { min-width: 50px; display: flex; justify-content: center; }
+    .nav-text { font-size: 0.9rem; font-weight: 500; flex: 1; }
 
-    .logo-icon {
-        min-width: 50px;
-        height: 50px;
-        background-color: #2563eb;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 1.2rem;
-        color: white;
-    }
-
-    .logo-text h1 { font-size: 1.1rem; color: white; margin: 0; }
-    .logo-text span { font-size: 0.7rem; color: #444; }
-
-    /* --- Visibilidad de elementos --- */
-    .logo-text, .nav-text, .menu-label, .user-info, .badge {
-        opacity: 0;
-        transform: translateX(-10px);
-        transition: opacity 0.2s, transform 0.2s;
-    }
-
-    .sidebar:hover .logo-text, 
-    .sidebar:hover .nav-text, 
-    .sidebar:hover .menu-label, 
-    .sidebar:hover .user-info,
-    .sidebar:hover .badge {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    /* --- Navegación --- */
-    .nav-link {
-        text-decoration: none;
-        color: inherit;
-    }
-
-    .icon-wrapper {
-        min-width: 50px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .menu ul { list-style: none; padding: 0; }
-    
     .menu li {
         display: flex;
         align-items: center;
@@ -125,69 +107,56 @@ const currentPath = pathname.slice(1); // Quita la barra inicial
         border-radius: 12px;
         color: #999;
         margin-bottom: 8px;
-        cursor: pointer;
         transition: all 0.2s ease;
+        width: 100%;
     }
 
-    .menu li:hover { background: rgba(255, 255, 255, 0.03); color: white; }
-    
-    .menu li.active { 
-        background: rgba(37, 99, 235, 0.1); 
-        color: #3b82f6; 
+    .menu li.active { background: rgba(37, 99, 235, 0.1); color: #3b82f6; }
+
+    /* LÓGICA DE VISIBILIDAD */
+    .nav-text, .badge-wrapper, .logo-text, .menu-label, .user-info {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease;
     }
 
-    .menu-label {
-        font-size: 0.7rem;
-        color: #555;
-        margin-bottom: 15px;
-        padding-left: 15px;
-        font-weight: 700;
+    .sidebar:hover .nav-text,
+    .sidebar:hover .badge-wrapper,
+    .sidebar:hover .logo-text,
+    .sidebar:hover .menu-label,
+    .sidebar:hover .user-info {
+        opacity: 1;
+        visibility: visible;
     }
 
-    .nav-text {
-        font-size: 0.9rem;
-        font-weight: 500;
+    /* EL BADGE CORREGIDO */
+    .badge-wrapper {
+        margin-left: auto;
+        padding-right: 15px;
+        display: flex;
+        align-items: center;
     }
 
     .badge {
-        margin-left: auto;
-        margin-right: 15px;
-        background: rgba(37, 99, 235, 0.2);
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 0.7rem;
-        color: #3b82f6;
-    }
-
-    /* --- Perfil --- */
-    .user-profile {
-        margin-top: auto;
-        display: flex;
-        align-items: center;
-        padding: 15px 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .avatar {
-        min-width: 50px;
-        height: 50px;
         background: #2563eb;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
         color: white;
+        padding: 2px 8px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        min-width: 20px;
+        justify-content: center;
     }
-    a {
-        text-decoration: none;
-        color: inherit; /* Esto hace que el enlace use el color de su padre */
-        outline: none;
-    }   
-    a:visited {
-        color: inherit;
-    }
+
+    /* (Resto de estilos de logo y perfil que ya tenías...) */
+    .logo-section { display: flex; align-items: center; gap: 15px; margin-bottom: 40px; }
+    .logo-icon { min-width: 50px; height: 50px; background-color: #2563eb; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+    .logo-text h1 { font-size: 1.1rem; color: white; margin: 0; }
+    .logo-text span { font-size: 0.7rem; color: #444; }
+    .user-profile { margin-top: auto; display: flex; align-items: center; padding: 15px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+    .avatar { min-width: 50px; height: 50px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
     .user-info { padding-left: 12px; }
     .name { font-size: 0.9rem; font-weight: 600; color: white; margin: 0; }
     .role { font-size: 0.75rem; color: #555; margin: 0; }
+    .nav-link { text-decoration: none; color: inherit; }
 </style>

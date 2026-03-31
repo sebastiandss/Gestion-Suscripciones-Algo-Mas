@@ -1,0 +1,188 @@
+---
+import MainLayout from '../layout/MainLayout.astro';
+import AlertSection from '../components/AlertSection.astro';
+---
+
+<MainLayout showHeader={false}>
+    <div class="budget-page-container">
+        
+        <header class="budget-custom-header">
+            <div class="title-area">
+                <h1>Presupuesto y Alertas</h1>
+                <p>Gestiona tus límites de gasto sin distracciones</p>
+            </div>
+
+            <div class="actions">
+                <button class="btn-white-style" id="open-budget-modal">
+                    + Nuevo presupuesto
+                </button>
+            </div>
+        </header>
+
+        <div class="budget-grid">
+            
+            <section class="budget-section">
+                <div class="section-header">
+                    <h3>Lista de presupuestos</h3>
+                    <span class="count-badge" id="budget-count">0</span>
+                </div>
+                
+                <div class="content-box scrollable-list" id="budget-list-container">
+                    <div class="inner-empty-state">
+                        <div class="inner-icon">📊</div>
+                        <p>No hay presupuestos activos</p>
+                        <span>Los límites que crees aparecerán aquí.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <div class="section-header">
+                    <h3>Configuraciones</h3>
+                </div>
+
+                <div class="content-box settings">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span>Alertas de correo</span>
+                            <p>Notificar al llegar al 80%</p>
+                        </div>
+                        <div class="toggle-mock"></div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span>Moneda principal</span>
+                            <p>USD - Dólares americanos</p>
+                        </div>
+                        <div class="chevron"></div>
+                    </div>
+
+                    <div class="upgrade-promo">
+                        <p>¿Quieres más control?</p>
+                        <small>Próximamente: Exportación a Excel</small>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <AlertSection />
+        
+    </div>
+</MainLayout>
+
+<script>
+    import { $budgets, removeBudget } from '../store/subsStore.js';
+
+    const initBudgetPage = () => {
+        const container = document.getElementById('budget-list-container');
+        const countBadge = document.getElementById('budget-count');
+        const openModalBtn = document.getElementById('open-budget-modal');
+
+        if (!container || !countBadge) return;
+
+        openModalBtn?.addEventListener('click', () => {
+            document.getElementById('modal-budget')?.classList.add('is-active');
+        });
+
+        $budgets.subscribe((budgets: any[]) => {
+            countBadge.textContent = budgets.length.toString();
+
+            if (budgets.length === 0) {
+                container.classList.add('empty');
+                container.innerHTML = `
+                    <div class="inner-empty-state">
+                        <div class="inner-icon">📊</div>
+                        <p>No hay presupuestos activos</p>
+                        <span>Los límites que crees aparecerán aquí.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            container.classList.remove('empty');
+            
+            container.innerHTML = budgets.map((b, index) => {
+                const percentage = Math.min((b.currentSpent / b.limit) * 100, 100);
+                
+                return `
+                    <div class="budget-item-row" style="margin-bottom: 30px; position: relative; group">
+                        <div class="budget-info-text" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="color: white; font-weight: 700; font-size: 1.1rem;">${b.category}</span>
+                                <span style="color: #555; font-size: 0.8rem;">Gasto actual</span>
+                            </div>
+                            <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
+                                <span style="color: white; font-weight: 600;">
+                                    $${b.currentSpent.toFixed(2)} <span style="color: #444; font-weight: 400;">/ $${b.limit}</span>
+                                </span>
+                                <button class="delete-budget-btn" data-index="${index}" style="background: none; border: none; color: #444; cursor: pointer; padding: 5px; transition: color 0.2s;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="progress-bar-bg" style="background: rgba(255,255,255,0.05); height: 12px; border-radius: 10px; overflow: hidden;">
+                            <div class="progress-fill" style="width: ${percentage}%; background: #2563eb; height: 100%; border-radius: 10px; transition: width 0.6s ease;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Asignar eventos a los botones de eliminar inyectados
+            container.querySelectorAll('.delete-budget-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt((e.currentTarget as HTMLElement).getAttribute('data-index') || "0");
+                    if (confirm('¿Deseas eliminar este presupuesto?')) {
+                        removeBudget(idx);
+                    }
+                });
+            });
+        });
+    };
+
+    initBudgetPage();
+    document.addEventListener('astro:after-swap', initBudgetPage);
+</script>
+
+<style>
+    /* Mantenemos tus estilos originales */
+    .budget-page-container { padding: 40px; }
+    .budget-custom-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px; }
+    .title-area h1 { font-size: 2.2rem; font-weight: 700; color: white; margin-bottom: 5px; }
+    .title-area p { color: #666; font-size: 1rem; }
+    .btn-white-style { background: #ffffff; color: #000000; border: none; padding: 10px 24px; border-radius: 30px; font-weight: 700; cursor: pointer; transition: transform 0.2s; }
+    .btn-white-style:hover { transform: scale(1.05); }
+
+    .budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .section-header h3 { color: #eee; font-size: 1.1rem; font-weight: 600; margin: 0; }
+    .count-badge { background: rgba(255, 255, 255, 0.05); color: #666; padding: 2px 10px; border-radius: 10px; font-size: 0.8rem; }
+
+    .content-box {
+        background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px; padding: 30px; height: 400px; overflow-y: auto;
+        scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .content-box::-webkit-scrollbar { display: none; }
+
+    .content-box.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 2px dashed rgba(255, 255, 255, 0.03); }
+    .inner-empty-state { display: flex; flex-direction: column; align-items: center; }
+    .inner-icon { font-size: 2.5rem; opacity: 0.2; margin-bottom: 15px; }
+
+    /* Estilo para el botón de eliminar al pasar el mouse por la fila */
+    :global(.delete-budget-btn:hover) {
+        color: #ef4444 !important;
+        transform: scale(1.2);
+    }
+
+    .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+    .setting-info span { color: #eee; font-size: 0.95rem; display: block; }
+    .setting-info p { color: #555; font-size: 0.8rem; margin-top: 2px; }
+    .toggle-mock { width: 35px; height: 20px; background: #2563eb; border-radius: 20px; position: relative; }
+    .toggle-mock::after { content: ''; position: absolute; right: 3px; top: 3px; width: 14px; height: 14px; background: white; border-radius: 50%; }
+    .chevron { color: #444; font-size: 1.2rem; }
+    .upgrade-promo { margin-top: 40px; padding: 25px; background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), transparent); border-radius: 20px; text-align: center; border: 1px solid rgba(37, 99, 235, 0.1); }
+    .upgrade-promo p { color: #3b82f6; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; }
+    .upgrade-promo small { color: #555; font-size: 0.75rem; }
+</style>

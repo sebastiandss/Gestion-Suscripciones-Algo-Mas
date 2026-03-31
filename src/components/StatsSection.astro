@@ -1,20 +1,88 @@
 ---
+/* src/components/StatsSection.astro */
 import StatCard from './StatCard.astro';
 ---
 
 <div class="stats-container">
-    <StatCard label="Gastos Mensuales" value="$145.20" iconColor="blue" />
-    <StatCard label="Suscripciones Activas" value="12" iconColor="green" /> 
-    <StatCard label="Próximo Pago" value="Mar 25" iconColor="purple" />
-    <StatCard label="Presupuesto Usado" value="65%" iconColor="orange" />
+    <div id="container-total-spent" class="stat-interactive">
+        <StatCard label="Gastos Mensuales" value="$0.00" color="blue" />
+    </div>
+    
+    <div id="container-subs-count" style="flex:1">
+        <StatCard label="Suscripciones Activas" value="0" color="green" /> 
+    </div>
+
+    <div style="flex:1">
+        <StatCard label="Próximo Pago" value="Mar 25" color="purple" />
+    </div>
+
+    <div id="container-budget-pct" style="flex:1">
+        <StatCard label="Presupuesto Usado" value="0%" color="orange" />
+    </div>
 </div>
+
+<script>
+    import { $subscriptions, $budgets } from '../store/subsStore.js';
+
+    const updateUI = () => {
+        const subs = $subscriptions.get();
+        const budgets = $budgets.get();
+        
+        // Buscamos el último (el Total)
+        const totalBudget = budgets[budgets.length - 1];
+
+        // SELECTORES CORREGIDOS: Buscamos la clase .stat-value que definiste en StatCard.astro
+        const spentEl = document.querySelector('#container-total-spent .stat-value');
+        const countEl = document.querySelector('#container-subs-count .stat-value');
+        const pctEl = document.querySelector('#container-budget-pct .stat-value');
+
+        // 1. Actualizar contador de suscripciones
+        if (countEl) {
+            countEl.textContent = subs.length.toString();
+        }
+
+        // 2. Actualizar datos del presupuesto total
+        if (totalBudget) {
+            if (spentEl) {
+                // Forzamos que sea número para evitar errores de visualización
+                const currentSpent = parseFloat(totalBudget.currentSpent as any) || 0;
+                spentEl.textContent = `$${currentSpent.toFixed(2)}`;
+            }
+
+            if (pctEl) {
+                const limit = parseFloat(totalBudget.limit as any) || 0;
+                const spent = parseFloat(totalBudget.currentSpent as any) || 0;
+                const percentage = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+                pctEl.textContent = `${percentage}%`;
+            }
+        }
+    };
+
+    // Escuchar cambios en los stores
+    $subscriptions.subscribe(updateUI);
+    $budgets.subscribe(updateUI);
+
+    // Carga inicial
+    updateUI();
+
+    // Compatibilidad con View Transitions de Astro
+    document.addEventListener('astro:after-swap', updateUI);
+</script>
 
 <style>
     .stats-container {
         display: flex;
         gap: 20px;
-        width: 100%;
         margin-bottom: 30px;
-        flex-wrap: wrap;
+    }
+
+    .stat-interactive {
+        flex: 1;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .stat-interactive:hover {
+        transform: translateY(-3px);
     }
 </style>

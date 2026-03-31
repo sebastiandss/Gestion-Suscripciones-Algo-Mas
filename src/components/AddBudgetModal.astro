@@ -1,0 +1,155 @@
+---
+/* src/components/AddBudgetModal.astro */
+---
+<div id="modal-budget" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Nuevo Presupuesto</h2>
+      <button id="close-budget" class="close-btn" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-form" id="form-budget">
+      <div class="input-group">
+        <label>Categoría</label>
+        <input 
+          type="text" 
+          id="budget-category" 
+          list="budget-categories-list" 
+          placeholder="Escribe o selecciona..." 
+          required 
+        />
+        <datalist id="budget-categories-list">
+          <option value="Entretenimiento"></option>
+          <option value="Streaming"></option>
+          <option value="Trabajo"></option>
+          <option value="Servicios"></option>
+          <option value="Salud"></option>
+          <option value="Videojuegos"></option>
+          <option value="Música"></option>
+        </datalist>
+      </div>
+
+      <div class="input-group">
+        <label>Límite Mensual</label>
+        <input 
+          type="number" 
+          placeholder="0.00" 
+          id="budget-input" 
+          step="0.01" 
+          required 
+        />
+      </div>
+
+      <button type="submit" class="btn-save">Establecer límite</button>
+    </form>
+  </div>
+</div>
+
+<style>
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+    display: none; justify-content: center; align-items: center; z-index: 1000;
+  }
+  .modal-overlay.is-active { display: flex; }
+
+  .modal-content {
+    background: #1a1a1a; width: 90%; max-width: 400px; padding: 30px;
+    border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+  }
+
+  .modal-header h2 { color: white; font-size: 1.4rem; font-weight: 700; margin: 0; }
+
+  /* BOTÓN CERRAR ALINEADO Y ESTÉTICO */
+  .close-btn {
+    background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #666; width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s ease; padding: 0;
+  }
+
+  .close-btn:hover {
+    background: rgba(239, 68, 68, 0.1); color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2); transform: rotate(90deg);
+  }
+
+  .modal-form { display: flex; flex-direction: column; gap: 20px; }
+  .input-group { display: flex; flex-direction: column; gap: 8px; }
+  .input-group label { font-size: 0.8rem; color: #888; font-weight: 600; text-transform: uppercase; }
+  
+  input { 
+    background: #222; border: 1px solid #333; padding: 12px; 
+    border-radius: 12px; color: white; outline: none; font-family: inherit;
+  }
+  input:focus { border-color: #3b82f6; background: #252525; }
+
+  /* LIMPIEZA DE INPUT NUMBER (Quitar flechas) */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  input[type=number] { -moz-appearance: textfield; }
+
+  /* Icono de datalist blanco */
+  input::-webkit-calendar-picker-indicator {
+    filter: invert(1); opacity: 0.4; cursor: pointer;
+  }
+
+  .btn-save { 
+    background: #3b82f6; color: white; border: none; padding: 15px; 
+    border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px;
+    transition: background 0.2s;
+  }
+  .btn-save:hover { background: #2563eb; }
+</style>
+
+<script>
+  import { addBudget } from '../store/subsStore.js';
+
+  const setupBudgetModal = () => {
+    const modal = document.getElementById('modal-budget');
+    const closeBtn = document.getElementById('close-budget');
+    const form = document.getElementById('form-budget') as HTMLFormElement;
+
+    // Escuchar el evento global para abrir
+    window.addEventListener('abrir-modal-presupuesto', () => {
+        modal?.classList.add('is-active');
+    });
+
+    closeBtn?.addEventListener('click', () => modal?.classList.remove('is-active'));
+
+    form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const categoryInput = document.getElementById('budget-category') as HTMLInputElement;
+        const amountInput = document.getElementById('budget-input') as HTMLInputElement;
+
+        const category = categoryInput.value;
+        const limit = parseFloat(amountInput.value);
+
+        if (category && limit > 0) {
+            // El store ya maneja el cálculo inicial del gasto si la categoría existe
+            addBudget({ 
+                id: crypto.randomUUID(), 
+                category, 
+                limit, 
+                currentSpent: 0 
+            });
+            form.reset();
+            modal?.classList.remove('is-active');
+        }
+    });
+  };
+
+  setupBudgetModal();
+  document.addEventListener('astro:after-swap', setupBudgetModal);
+</script>

@@ -5,18 +5,47 @@
     </div>
 
     <div class="actions">
-        <div class="date-pill">Marzo 2025</div>
-        <button class="btn-new">+ Nueva suscripción</button>
+        <div class="date-pill" id="current-date-pill">Cargando...</div>
+        <button id="open-modal" class="btn-new">+ Nueva suscripcion</button>
     </div>
 </header>
 
+<script>
+    const setupHeader = () => {
+        // 1. Lógica de la fecha
+        const dateElement = document.getElementById('current-date-pill');
+        if (dateElement) {
+            const ahora = new Date();
+            const mesYAnio = ahora.toLocaleDateString('es-ES', {
+                month: 'long',
+                year: 'numeric'
+            });
+            dateElement.textContent = mesYAnio.charAt(0).toUpperCase() + mesYAnio.slice(1);
+        }
+
+        // 2. Lógica del botón (Moverla AQUÍ adentro es la clave)
+        const openModalBtn = document.getElementById('open-modal');
+        
+        // Eliminamos cualquier listener previo para no duplicar y agregamos el nuevo
+        openModalBtn?.addEventListener('click', () => {
+            window.dispatchEvent(new CustomEvent('abrir-modal-suscripcion'));
+        });
+    };
+
+    // Ejecutar al cargar la primera vez
+    setupHeader();
+
+    // Re-ejecutar cada vez que ClientRouter cambie la página
+    document.addEventListener('astro:after-swap', setupHeader);
+</script>
+
 <style>
+    /* Mantenemos tus estilos EXACTAMENTE igual */
     .top-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 30px 40px;
-        /* Fondo transparente para que herede el gris del layout */
         background-color: transparent; 
     }
 
@@ -29,6 +58,7 @@
     .title-area h2 {
         font-size: 1.8rem;
         font-weight: 700;
+        color: white; /* Aseguramos visibilidad en modo oscuro */
     }
 
     .status-dot {
@@ -53,6 +83,7 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         display: flex;
         align-items: center;
+        color: white;
     }
 
     .btn-new {
@@ -67,20 +98,6 @@
     }
 
     .btn-new:hover {
-        transform: scale(1.05);
-    }
-    .btn-add {
-        background-color: white;
-        color: black;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-    .btn-add:hover {
-        background-color: #e0e0e0;
         transform: scale(1.05);
     }
 </style>

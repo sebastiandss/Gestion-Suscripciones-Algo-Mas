@@ -1,79 +1,231 @@
 ---
+/* src/components/SubscriptionsGrid.astro */
+const { subscriptions = [] } = Astro.props;
 import DetailedSubCard from './DetailedSubCard.astro';
-const { subscriptions } = Astro.props;
 ---
 
 <div class="subs-container grid-layout" id="subs-container">
-    {subscriptions.map((sub) => (
-        <div class="flip-card" id={`card-${sub.serviceClass}`}>
-            <DetailedSubCard {...sub} />
+    
+    <div class="add-card-full" id="grid-add-btn">
+        <div class="plus-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         </div>
-    ))}
+        <div class="text">
+            <h3>Nueva suscripción</h3>
+            <p>Registra un nuevo servicio</p>
+        </div>
+    </div>
+
+    <div id="grid-dynamic-container" style="display: contents;">
+        {subscriptions.map((sub) => (
+            <div class="flip-card">
+                <DetailedSubCard {...sub} />
+            </div>
+        ))}
+    </div>
 </div>
 
 <script>
-    const container = document.getElementById('subs-container');
+    import { $subscriptions, removeSubscription, updateSubscriptionStatus } from '../store/subsStore.js';
 
-    window.addEventListener('subscription-added', (e: any) => {
-        const data = e.detail;
-        
-        // Creamos el contenedor 'flip-card'
-        const flipCard = document.createElement('div');
-        flipCard.className = 'flip-card';
-        flipCard.id = `card-${Date.now()}`; // ID único basado en tiempo
+    const initGrid = () => {
+        const container = document.getElementById('subs-container');
+        const dynamicContainer = document.getElementById('grid-dynamic-container');
+        const gridAddBtn = document.getElementById('grid-add-btn');
+        const btnGrid = document.getElementById('grid-view'); 
+        const btnList = document.getElementById('list-view'); 
 
-        // Estructura idéntica a tu componente Astro
-        flipCard.innerHTML = `
-            <div class="detailed-card">
-                <div class="card-content">
-                    <div class="service-icon ${data.serviceClass}"></div>
-                    <div class="text-info">
-                        <h3>${data.name}</h3>
-                        <p>${data.category} • ${data.price} <small>/${data.period}</small></p>
-                    </div>
-                    <div class="meta-info">
-                        <div class="badge">${data.status}</div>
-                        <div class="date">Pago: ${data.date}</div>
+        if (!container || !dynamicContainer) return;
+
+        // --- CAMBIO DE VISTA ---
+        btnList?.addEventListener('click', () => {
+            container.className = 'subs-container list-layout';
+            btnList.classList.add('active');
+            btnGrid?.classList.remove('active');
+        });
+
+        btnGrid?.addEventListener('click', () => {
+            container.className = 'subs-container grid-layout';
+            btnGrid.classList.add('active');
+            btnList?.classList.remove('active');
+        });
+
+        // --- ABRIR POPUP ---
+        gridAddBtn?.addEventListener('click', () => {
+            window.dispatchEvent(new CustomEvent('abrir-modal-suscripcion'));
+        });
+
+        // --- REACTIVIDAD CON EL STORE ---
+        $subscriptions.subscribe((subs: any[]) => {
+            dynamicContainer.innerHTML = subs.map((sub, index) => {
+                const status = sub.status || 'Activo';
+                const statusClass = status.toLowerCase();
+
+                return `
+                <div class="flip-card dynamic-item">
+                    <div class="detailed-card">
+                        <div class="card-content">
+                            <div class="service-icon ${sub.serviceClass || 'blue'}"></div>
+                            <div class="text-info">
+                                <h3>${sub.name}</h3>
+                                <p>Manual • $${sub.price}</p>
+                                <div class="tag-label-simple">${sub.tag || 'General'}</div>
+                            </div>
+                            <div class="meta-info">
+                                <div class="status-dropdown" data-index="${index}">
+                                    <div class="badge ${statusClass}">
+                                        <span class="arrow">▾</span> ${status}
+                                    </div>
+                                    <div class="dropdown-menu">
+                                        <div class="option" data-value="Activo">Activo</div>
+                                        <div class="option" data-value="Pausada">Pausada</div>
+                                        <div class="option" data-value="Vencida">Vencida</div>
+                                    </div>
+                                </div>
+                                <div class="date">Pago: ${sub.date || 'Sin fecha'}</div>
+                            </div>
+                            <button class="delete-sub-btn" data-index="${index}" title="Eliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `}).join('');
 
-        if (container) {
-            // Lo añadimos al inicio de la lista
-            container.prepend(flipCard);
+            // --- RE-ASIGNACIÓN DE EVENTOS ---
             
-            // Forzamos un pequeño delay para que la animación de entrada funcione
-            flipCard.style.opacity = '0';
-            flipCard.style.transform = 'translateY(20px)';
+            // 1. Eliminar
+            dynamicContainer.querySelectorAll('.delete-sub-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt((e.currentTarget as HTMLElement).getAttribute('data-index') || "0");
+                    if(confirm(`¿Estás seguro de eliminar esta suscripción?`)) {
+                        removeSubscription(idx);
+                    }
+                });
+            });
+
+            // 2. Lógica de Dropdowns
+            dynamicContainer.querySelectorAll('.status-dropdown').forEach(dropdown => {
+                const badge = dropdown.querySelector('.badge');
+                const index = parseInt(dropdown.getAttribute('data-index') || "0");
+
+                badge?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.status-dropdown').forEach(d => {
+                        if (d !== dropdown) d.classList.remove('is-open');
+                    });
+                    dropdown.classList.toggle('is-open');
+                });
+
+                dropdown.querySelectorAll('.option').forEach(opt => {
+                    opt.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const newValue = (opt as HTMLElement).getAttribute('data-value');
+                        if (newValue) {
+                            updateSubscriptionStatus(index, newValue);
+                        }
+                        dropdown.classList.remove('is-open');
+                    });
+                });
+            });
             
-            setTimeout(() => {
-                flipCard.style.transition = 'all 0.5s ease';
-                flipCard.style.opacity = '1';
-                flipCard.style.transform = 'translateY(0)';
-            }, 10);
-        }
+            // Avisar que se terminó de renderizar para otros filtros si existen
+            window.dispatchEvent(new CustomEvent('subs-renderizadas'));
+        });
+    };
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.status-dropdown').forEach(d => d.classList.remove('is-open'));
     });
+
+    initGrid();
+    document.addEventListener('astro:after-swap', initGrid);
 </script>
 
 <style>
-    .subs-container {
-        display: grid;
-        gap: 25px;
-        width: 100%;
+    /* Estructura Base */
+    .subs-container { width: 100%; transition: all 0.3s ease; }
+
+    /* GRID */
+    .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+
+    /* LISTA */
+    .list-layout { display: flex; flex-direction: column; gap: 15px; }
+
+    /* BOTON AGREGAR */
+    .add-card-full {
+        background: rgba(255, 255, 255, 0.02); border: 2px dashed rgba(255, 255, 255, 0.08);
+        border-radius: 28px; padding: 30px; display: flex; flex-direction: column;
+        justify-content: center; align-items: center; gap: 15px; cursor: pointer;
+        min-height: 180px; transition: all 0.3s ease;
+    }
+    .list-layout .add-card-full { flex-direction: row; justify-content: flex-start; min-height: 80px; padding: 15px 25px; }
+    .plus-circle { background: rgba(255, 255, 255, 0.05); color: #666; padding: 12px; border-radius: 50%; display: flex; transition: all 0.3s ease; }
+    .add-card-full:hover { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.4); }
+    .add-card-full:hover .plus-circle { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+
+    /* TARJETAS */
+    :global(.flip-card.dynamic-item) { width: 100%; transition: all 0.3s ease; }
+    :global(.detailed-card) {
+        background: #1e1e1e; padding: 25px; border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; width: 100%;
     }
 
-    /* Diseño de Cuadrícula (Default) */
-    .grid-layout {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    .grid-layout :global(.detailed-card) { min-height: 180px; }
+    .list-layout :global(.detailed-card) { min-height: 80px; padding: 15px 25px; }
+
+    :global(.card-content) { display: flex; align-items: center; gap: 15px; width: 100%; }
+    :global(.service-icon) { width: 50px; height: 50px; border-radius: 14px; flex-shrink: 0; }
+    :global(.text-info h3) { color: white; margin: 0; font-size: 1.1rem; }
+    :global(.text-info p) { color: #777; margin: 0; font-size: 0.85rem; }
+    
+    /* ETIQUETA SIMPLE AGREGADA */
+    :global(.tag-label-simple) { 
+        font-size: 0.65rem; 
+        color: #444; 
+        text-transform: uppercase; 
+        font-weight: 700; 
+        margin-top: 4px; 
     }
 
-    /* Diseño Rectangular (Lista) */
-    .list-layout {
-        grid-template-columns: 1fr;
-    }
+    :global(.meta-info) { margin-left: auto; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
-    .flip-card {
-        will-change: transform;
+    :global(.status-dropdown) { 
+        position: relative; 
+        width: 115px; 
     }
+    :global(.badge) {
+        display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+        border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+        justify-content: center; width: 100%;
+    }
+    :global(.badge.activo) { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+    :global(.badge.pausada) { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+    :global(.badge.vencida) { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    
+    :global(.arrow) { font-size: 10px; opacity: 0.6; transition: transform 0.2s; }
+    :global(.status-dropdown.is-open .arrow) { transform: rotate(180deg); }
+
+    :global(.dropdown-menu) {
+        position: absolute; top: 125%; left: 0; background: #2a2a2a;
+        border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: none; z-index: 100;
+        width: 100%; overflow: hidden;
+    }
+    :global(.status-dropdown.is-open .dropdown-menu) { display: block; }
+    :global(.option) { padding: 10px 12px; color: #ccc; font-size: 0.75rem; text-align: left; transition: background 0.2s; }
+    :global(.option:hover) { background: rgba(255, 255, 255, 0.05); color: white; }
+
+    :global(.date) { color: #555; font-size: 0.7rem; }
+
+    :global(.delete-sub-btn) {
+        background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.1);
+        padding: 8px; border-radius: 10px; cursor: pointer; margin-left: 10px; transition: 0.2s;
+    }
+    :global(.delete-sub-btn:hover) { background: #ef4444; color: white; transform: scale(1.05); }
+
+    :global(.blue) { background: #3b82f6; } :global(.green) { background: #22c55e; } 
+    :global(.purple) { background: #a855f7; } :global(.red) { background: #ef4444; } 
+    :global(.orange) { background: #f97316; }
 </style>

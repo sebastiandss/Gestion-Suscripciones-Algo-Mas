@@ -1,15 +1,27 @@
 ---
+// src/components/StatCard.astro
 const { name, price, serviceClass } = Astro.props;
 ---
-<div class="sub-card">
-    <div class={`sub-icon ${serviceClass}`}></div>
-    <div class="sub-info">
-        <span class="sub-name">{name}</span>
-        <span class="sub-price">{price}</span>
+
+<a href="/suscripciones" class="sub-card-link">
+    <div class="sub-card">
+        <div class={`sub-icon ${serviceClass}`}></div>
+        <div class="sub-info">
+            <span class="sub-name">{name}</span>
+            <span class="sub-price">{price}</span>
+        </div>
     </div>
-</div>
+</a>
 
 <style>
+    /* --- RESET DEL ENLACE --- */
+    .sub-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block; /* Para que ocupe todo el ancho del contenedor */
+        outline: none;
+    }
+
     .sub-card {
         min-width: 240px;
         background-color: #222222;
@@ -20,30 +32,54 @@ const { name, price, serviceClass } = Astro.props;
         gap: 15px;
         border: 1px solid rgba(255, 255, 255, 0.03);
         flex-shrink: 0;
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         cursor: pointer;
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        will-change: transform, box-shadow;
     }
 
-    .sub-card:hover {
+    /* --- ESTADOS DE INTERACCIÓN (HOVER) --- */
+    /* Usamos el hover sobre el link o la card para activar los efectos */
+    .sub-card-link:hover .sub-card {
         background-color: #282828;
         transform: translateY(-5px) scale(1.02);
         border-color: rgba(59, 130, 246, 0.3);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+                    0 0 15px rgba(59, 130, 246, 0.1);
     }
 
-    .sub-icon { width: 50px; height: 50px; border-radius: 14px; transition: transform 0.3s ease; }
-    .sub-card:hover .sub-icon { transform: rotate(-10deg); }
+    .sub-icon { 
+        width: 50px; 
+        height: 50px; 
+        border-radius: 14px; 
+        transition: transform 0.3s ease-out;
+    }
 
-    .spotify { background: #1DB954; }
-    .netflix { background: #E50914; }
-    .youtube { background: #FF0000; }
-    .icloud { background: #007AFF; }
-    .disney { background: #001244; }
-    .hbo { background: #5d00ff; }
-    .prime { background: #00A8E1; }
-    .steam { background: #171a21; }
+    .sub-card-link:hover .sub-icon {
+        transform: rotate(-10deg);
+    }
 
-    .sub-name { font-size: 1rem; font-weight: 600; color: white; transition: color 0.3s; }
-    .sub-card:hover .sub-name { color: #3b82f6; }
+    .sub-name { 
+        font-size: 1rem; 
+        font-weight: 600; 
+        color: white; 
+        display: block;
+        transition: color 0.3s ease;
+    }
+
+    .sub-card-link:hover .sub-name {
+        color: #3b82f6;
+    }
+
     .sub-price { font-size: 0.85rem; color: #777; }
+    
+    /* Paleta de Colores */
+    .spotify { background-color: #1DB954; }
+    .netflix { background-color: #E50914; }
+    .youtube { background-color: #FF0000; }
+    .icloud { background-color: #007AFF; }
+    .disney { background-color: #001244; }
+    .hbo { background-color: #5d00ff; }
+    .prime { background-color: #00A8E1; }
+    .steam { background-color: #171a21; }
 </style>

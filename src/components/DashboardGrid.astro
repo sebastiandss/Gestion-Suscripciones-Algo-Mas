@@ -2,10 +2,32 @@
     <div class="card main-chart">
         <div class="card-header">
             <span class="card-title">Diagrama de actividad</span>
-            <p class="card-subtitle">Análisis de consumo mensual</p>
+            <p class="card-subtitle" id="chart-subtitle">Distribución de gastos por fecha de pago</p>
         </div>
-        <div class="placeholder-content">DIAGRAMA</div>
+        
+        <div class="chart-content-area">
+            <div class="bars-flex-box" id="chart-bars">
+                <div class="bar-item" data-idx="0"></div>
+                <div class="bar-item" data-idx="1"></div>
+                <div class="bar-item" data-idx="2"></div>
+                <div class="bar-item" data-idx="3"></div>
+                <div class="bar-item" data-idx="4"></div>
+                <div class="bar-item" data-idx="5"></div>
+                <div class="bar-item" data-idx="6"></div>
+            </div>
+
+            <div class="labels-row" id="labels-row">
+                <span>Ene</span>
+                <span>Feb</span>
+                <span>Mar</span>
+                <span>Abr</span>
+                <span>May</span>
+                <span>Jun</span>
+                <span>Jul</span>
+            </div>
+        </div>
     </div>
+
     <div class="card sidebar-info">
         <div class="card-header">
             <span class="card-title">Próximos pagos</span>
@@ -15,19 +37,115 @@
     </div>
 </div>
 
+<script>
+    import { $subscriptions } from '../store/subsStore.js';
+
+    const renderChart = () => {
+        const subs = $subscriptions.get();
+        const bars = document.querySelectorAll('.bar-item');
+        const labels = document.querySelectorAll('.labels-row span');
+        const monthlyTotals = new Array(7).fill(0);
+
+        subs.forEach(sub => {
+            if (sub.date) {
+                // El "T00:00:00" previene errores de zona horaria
+                const monthIndex = new Date(sub.date + 'T00:00:00').getMonth();
+                if (monthIndex >= 0 && monthIndex <= 6) {
+                    monthlyTotals[monthIndex] += parseFloat(sub.price) || 0;
+                }
+            }
+        });
+
+        const limit = Math.max(...monthlyTotals, 500);
+        const currentMonth = new Date().getMonth();
+
+        bars.forEach((bar, i) => {
+            const total = monthlyTotals[i];
+            const height = (total / limit) * 100;
+
+            (bar as HTMLElement).style.setProperty('--h', `${Math.max(height, 2)}%`);
+            bar.setAttribute('data-val', `$${total.toFixed(2)}`);
+
+            bar.classList.toggle('has-data', total > 0);
+            bar.classList.toggle('is-current', i === currentMonth);
+            labels[i].classList.toggle('active-m', i === currentMonth);
+        });
+    };
+
+    // El .subscribe ya ejecuta la función la primera vez automáticamente
+    $subscriptions.subscribe(renderChart);
+    
+    // Solo para cuando cambias de página con ClientRouter
+    document.addEventListener('astro:after-swap', renderChart);
+</script>
+
 <style>
     .dashboard-grid { display: flex; gap: 24px; width: 100%; }
+    
     .card {
         background-color: #222222; border-radius: 30px; padding: 30px;
         display: flex; flex-direction: column; height: 320px;
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        border: 1px solid rgba(255, 255, 255, 0.03); flex: 1; cursor: pointer;
+        border: 1px solid rgba(255, 255, 255, 0.03); flex: 1;
     }
     .main-chart { flex: 6.5; }
     .sidebar-info { flex: 3.5; }
-    .card:hover { transform: translateY(-10px); background-color: #282828; border-color: rgba(59, 130, 246, 0.3); }
+
+    .chart-content-area {
+        flex: 1; display: flex; flex-direction: column; margin-top: 25px;
+    }
+
+    .bars-flex-box {
+        display: flex; align-items: flex-end; justify-content: space-between;
+        gap: 15px; height: 160px; padding: 0 10px;
+    }
+
+    .bar-item {
+        flex: 1;
+        height: var(--h, 2%);
+        background: rgba(255, 255, 255, 0.02); /* Color base vacio */
+        border-radius: 8px 8px 3px 3px;
+        transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+        position: relative;
+    }
+
+    /* Barra con datos (Cualquier mes con suscripciones) */
+    .has-data {
+        background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    /* Brillo extra si es el mes actual */
+    .is-current.has-data {
+        filter: saturate(1.5);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+
+    .bar-item:hover {
+        filter: brightness(1.2);
+    }
+
+    .bar-item:hover::after {
+        content: attr(data-val);
+        position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+        background: #333; color: white; padding: 5px 10px; border-radius: 8px;
+        font-size: 0.75rem; font-weight: 700; white-space: nowrap;
+        z-index: 10; border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .labels-row {
+        display: flex; justify-content: space-between; margin-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;
+    }
+
+    .labels-row span {
+        flex: 1; text-align: center; font-size: 0.7rem; color: #444;
+        font-weight: 800; text-transform: uppercase;
+    }
+
+    .active-m { color: #3b82f6 !important; }
+
     .card-title { font-size: 1.1rem; font-weight: 600; color: white; }
     .card-subtitle { font-size: 0.8rem; color: #555; margin-top: 5px; }
+
     .placeholder-content { 
         flex: 1; border-radius: 22px; background: rgba(0, 0, 0, 0.2); 
         display: flex; align-items: center; justify-content: center; 

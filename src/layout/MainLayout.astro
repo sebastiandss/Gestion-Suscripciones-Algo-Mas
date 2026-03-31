@@ -1,26 +1,36 @@
 ---
+// src/layouts/MainLayout.astro
+import { ClientRouter } from 'astro:transitions';
 import Sidebar from '../components/Sidebar.astro';
 import Header from '../components/Header.astro';
 import AddSubscriptionModal from '../components/AddSubscriptionModal.astro';
+import AddBudgetModal from '../components/AddBudgetModal.astro';
+
+const { showHeader = true } = Astro.props;
 ---
 
 <html lang="es">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SubTrack</title>
+    <ClientRouter />
 </head>
 <body>
     <div class="app-container">
         <Sidebar />
+
         <div class="main-wrapper">
-            <Header />
+            {showHeader && <Header />}
+            
             <main class="content-area">
                 <slot />
             </main>
         </div>
     </div>
+
     <AddSubscriptionModal />
+    <AddBudgetModal />
 
     <style is:global>
         /* --- RESET Y FUENTES --- */
@@ -28,57 +38,60 @@ import AddSubscriptionModal from '../components/AddSubscriptionModal.astro';
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
         }
         
         /* --- OCULTAR SCROLLBAR GLOBAL --- */
-        /* Chrome, Safari, Edge y Opera */
-        *::-webkit-scrollbar {
-            display: none;
-        }
+        *::-webkit-scrollbar { display: none; }
 
-        /* Firefox */
         html, body {
             scrollbar-width: none;
-            -ms-overflow-style: none; /* IE y Edge */
-        }
-
-        body { 
+            -ms-overflow-style: none;
             background-color: #121212; 
             color: white; 
-            overflow: hidden; /* Evita scroll en el body principal */
+            overflow: hidden; 
             height: 100vh;
             width: 100vw;
         }
 
-        /* --- ESTRUCTURA --- */
+        /* --- ESTRUCTURA DE LA APP --- */
         .app-container {
             display: flex;
             height: 100vh;
             width: 100vw;
+            overflow: hidden;
         }
 
+        /* Contenedor que envuelve Header + Main */
         .main-wrapper {
             display: flex;
             flex-direction: column;
-            flex: 1;
+            flex: 1; /* Ocupa todo el espacio restante al lado del Sidebar */
             background-color: #1a1a1a;
-            border-radius: 0; 
-            min-width: 0;
+            min-width: 0; /* CRUCIAL: Permite que el contenido se encoja sin desbordar */
             position: relative;
+            height: 100vh;
+            transition: all 0.3s ease; /* Suaviza el movimiento cuando el Sidebar se expande */
         }
 
+        /* Área donde vive el contenido de cada página */
         .content-area {
             flex: 1;
             padding: 10px 40px;
-            overflow-y: auto; /* Permite scroll interno si el contenido crece */
-            overflow-x: hidden; /* Evita fugas horizontales */
-            /* Refuerzo para asegurar que el scroll interno también sea invisible */
+            overflow-y: auto; /* Permite scroll vertical interno si hay mucho contenido */
+            overflow-x: hidden;
             scrollbar-width: none; 
+            -ms-overflow-style: none;
         }
 
-        .content-area::-webkit-scrollbar {
-            display: none;
+        .content-area::-webkit-scrollbar { 
+            display: none; 
+        }
+
+        /* Estilo para asegurar que el slot ocupe el ancho correcto */
+        main {
+            width: 100%;
+            min-width: 0;
         }
     </style>
 </body>

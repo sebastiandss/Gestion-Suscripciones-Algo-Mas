@@ -1,0 +1,89 @@
+---
+/* src/components/AlertSection.astro */
+---
+<section class="alerts-container">
+    <div class="section-header">
+        <div class="header-left">
+            <div class="alert-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            </div>
+            <h3>Alertas activas</h3>
+        </div>
+        <span class="status-text">Sistema monitoreando</span>
+    </div>
+
+    <div class="alerts-content">
+        <div class="empty-alerts">
+            <p>No hay alertas criticas en este momento.</p>
+            <span>Te notificaremos cuando tus suscripciones superen los limites establecidos.</span>
+        </div>
+    </div>
+</section>
+
+<style>
+    .alerts-container {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        padding: 25px 30px;
+        margin-top: 30px; /* Separacion del grid de arriba */
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .alert-icon {
+        color: #f59e0b; /* Color ambar/alerta */
+        display: flex;
+        align-items: center;
+    }
+
+    .header-left h3 {
+        color: #eee;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .status-text {
+        font-size: 0.75rem;
+        color: #444;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .alerts-content {
+        min-height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .empty-alerts {
+        text-align: center;
+    }
+
+    .empty-alerts p {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+
+    .empty-alerts span {
+        color: #444;
+        font-size: 0.8rem;
+    }
+</style>

@@ -25,26 +25,61 @@ import ViewControls from './ViewControls.astro';
 </div>
 
 <script>
-    // Lógica para manejar la selección de los filtros de estado
-    const filterContainer = document.getElementById('status-filter-group');
-    
-    if (filterContainer) {
+    const setupFilters = () => {
+        const filterContainer = document.getElementById('status-filter-group');
+        const searchInput = document.getElementById('sub-search') as HTMLInputElement;
+        
+        if (!filterContainer) return;
+
         const buttons = filterContainer.querySelectorAll('.filter-btn');
+
+        const applyFilters = () => {
+            const activeStatus = filterContainer.querySelector('.filter-btn.active')?.getAttribute('data-status') || 'todos';
+            const searchText = searchInput?.value.toLowerCase() || '';
+            
+            const cards = document.querySelectorAll('.flip-card.dynamic-item');
+
+            cards.forEach(card => {
+                const name = card.querySelector('h3')?.textContent?.toLowerCase() || '';
+                // Obtenemos el texto del badge y lo limpiamos
+                const statusBadge = card.querySelector('.badge')?.textContent?.toLowerCase().trim() || '';
+                
+                // CORRECCIÓN AQUÍ:
+                // Usamos una lógica que entienda que "pausado" (botón) matchea con "pausada" (badge)
+                let matchesStatus = false;
+                
+                if (activeStatus === 'todos') {
+                    matchesStatus = true;
+                } else {
+                    // Si el badge empieza por la raíz de la palabra (pausad, vencid, activ)
+                    // evitaremos el problema de la "o" vs la "a".
+                    const root = activeStatus.slice(0, -1); // quita la última letra
+                    matchesStatus = statusBadge.includes(root);
+                }
+
+                const matchesSearch = name.includes(searchText);
+
+                if (matchesStatus && matchesSearch) {
+                    (card as HTMLElement).style.display = 'block';
+                } else {
+                    (card as HTMLElement).style.display = 'none';
+                }
+            });
+        };
 
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
-                // 1. Quitar la clase 'active' de todos los botones
                 buttons.forEach(b => b.classList.remove('active'));
-                
-                // 2. Añadir la clase 'active' al botón clickeado
                 btn.classList.add('active');
-                
-                // Nota: Aquí es donde más adelante podrías filtrar las cajas 
-                // usando el valor de btn.getAttribute('data-status')
-                console.log("Filtrando por:", btn.getAttribute('data-status'));
+                applyFilters();
             });
         });
-    }
+
+        searchInput?.addEventListener('input', applyFilters);
+    };
+
+    setupFilters();
+    document.addEventListener('astro:after-swap', setupFilters);
 </script>
 
 <style>
