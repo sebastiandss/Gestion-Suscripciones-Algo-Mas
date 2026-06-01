@@ -1,6 +1,6 @@
 ---
-/* src/components/AddBudgetModal.astro */
 ---
+
 <div id="modal-budget" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header">
@@ -16,12 +16,12 @@
     <form class="modal-form" id="form-budget">
       <div class="input-group">
         <label>Categoría</label>
-        <input 
-          type="text" 
-          id="budget-category" 
-          list="budget-categories-list" 
-          placeholder="Escribe o selecciona..." 
-          required 
+        <input
+          type="text"
+          id="budget-category"
+          list="budget-categories-list"
+          placeholder="Escribe o selecciona..."
+          required
         />
         <datalist id="budget-categories-list">
           <option value="Entretenimiento"></option>
@@ -36,12 +36,12 @@
 
       <div class="input-group">
         <label>Límite Mensual</label>
-        <input 
-          type="number" 
-          placeholder="0.00" 
-          id="budget-input" 
-          step="0.01" 
-          required 
+        <input
+          type="number"
+          placeholder="0.00"
+          id="budget-input"
+          step="0.01"
+          required
         />
       </div>
 
@@ -70,7 +70,6 @@
 
   .modal-header h2 { color: white; font-size: 1.4rem; font-weight: 700; margin: 0; }
 
-  /* BOTÓN CERRAR ALINEADO Y ESTÉTICO */
   .close-btn {
     background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
     color: #666; width: 32px; height: 32px; border-radius: 8px;
@@ -86,27 +85,25 @@
   .modal-form { display: flex; flex-direction: column; gap: 20px; }
   .input-group { display: flex; flex-direction: column; gap: 8px; }
   .input-group label { font-size: 0.8rem; color: #888; font-weight: 600; text-transform: uppercase; }
-  
-  input { 
-    background: #222; border: 1px solid #333; padding: 12px; 
+
+  input {
+    background: #222; border: 1px solid #333; padding: 12px;
     border-radius: 12px; color: white; outline: none; font-family: inherit;
   }
   input:focus { border-color: #3b82f6; background: #252525; }
 
-  /* LIMPIEZA DE INPUT NUMBER (Quitar flechas) */
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
     -webkit-appearance: none; margin: 0;
   }
   input[type=number] { -moz-appearance: textfield; }
 
-  /* Icono de datalist blanco */
   input::-webkit-calendar-picker-indicator {
     filter: invert(1); opacity: 0.4; cursor: pointer;
   }
 
-  .btn-save { 
-    background: #3b82f6; color: white; border: none; padding: 15px; 
+  .btn-save {
+    background: #3b82f6; color: white; border: none; padding: 15px;
     border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px;
     transition: background 0.2s;
   }
@@ -114,21 +111,27 @@
 </style>
 
 <script>
-  import { addBudget } from '../store/subsStore.js';
+  import { addBudget } from '../store/budgets';
+
+  let currentBudgetModal: HTMLElement | null = null;
+  let isBudgetWindowListenerAdded = false;
 
   const setupBudgetModal = () => {
-    const modal = document.getElementById('modal-budget');
+    currentBudgetModal = document.getElementById('modal-budget');
+    const modal = currentBudgetModal;
     const closeBtn = document.getElementById('close-budget');
     const form = document.getElementById('form-budget') as HTMLFormElement;
 
-    // Escuchar el evento global para abrir
-    window.addEventListener('abrir-modal-presupuesto', () => {
-        modal?.classList.add('is-active');
-    });
+    if (!isBudgetWindowListenerAdded) {
+        window.addEventListener('abrir-modal-presupuesto', () => {
+            currentBudgetModal?.classList.add('is-active');
+        });
+        isBudgetWindowListenerAdded = true;
+    }
 
-    closeBtn?.addEventListener('click', () => modal?.classList.remove('is-active'));
+    if (closeBtn) closeBtn.onclick = () => modal?.classList.remove('is-active');
 
-    form?.addEventListener('submit', (e) => {
+    if (form) form.onsubmit = (e) => {
         e.preventDefault();
         const categoryInput = document.getElementById('budget-category') as HTMLInputElement;
         const amountInput = document.getElementById('budget-input') as HTMLInputElement;
@@ -137,17 +140,15 @@
         const limit = parseFloat(amountInput.value);
 
         if (category && limit > 0) {
-            // El store ya maneja el cálculo inicial del gasto si la categoría existe
-            addBudget({ 
-                id: crypto.randomUUID(), 
-                category, 
-                limit, 
-                currentSpent: 0 
+            addBudget({
+                id: crypto.randomUUID(),
+                category,
+                limit,
             });
             form.reset();
             modal?.classList.remove('is-active');
         }
-    });
+    };
   };
 
   setupBudgetModal();

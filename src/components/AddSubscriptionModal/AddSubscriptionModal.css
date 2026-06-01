@@ -1,0 +1,160 @@
+/* ─── OVERLAY ────────────────────────────────────────────────────── */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-overlay.is-active { display: flex; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ─── CONTENIDO DEL MODAL ────────────────────────────────────────── */
+.modal-content {
+    background: #18181b;
+    width: 92%;
+    max-width: 460px;
+    padding: 32px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 32px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.03);
+    animation: slideUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─── HEADER ─────────────────────────────────────────────────────── */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+.modal-header h2 {
+    color: white;
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+
+/* ─── BOTÓN CERRAR ───────────────────────────────────────────────── */
+.close-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: #555;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+.close-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+    transform: rotate(90deg);
+}
+
+/* ─── FORMULARIO ─────────────────────────────────────────────────── */
+.modal-form { display: flex; flex-direction: column; gap: 18px; }
+
+.input-group { display: flex; flex-direction: column; gap: 7px; }
+.input-group label {
+    font-size: 0.72rem;
+    color: #666;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.modal-form input,
+.modal-form input[type="text"],
+.modal-form input[type="date"] {
+    background: #222225;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 12px 14px;
+    border-radius: 14px;
+    color: white;
+    outline: none;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color 0.2s, background 0.2s;
+    width: 100%;
+}
+.modal-form input:focus {
+    border-color: rgba(59, 130, 246, 0.5);
+    background: #25252a;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.modal-form input::placeholder { color: #3a3a3a; }
+.modal-form input::-webkit-calendar-picker-indicator {
+    filter: invert(0.4);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* ─── COLOR PICKER ───────────────────────────────────────────────── */
+.color-picker { display: flex; gap: 12px; align-items: center; }
+.color-option input { display: none; }
+.dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: block;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.color-option input:checked + .dot {
+    border-color: white;
+    transform: scale(1.15);
+    box-shadow: 0 0 12px currentColor;
+}
+.dot:hover { transform: scale(1.1); }
+
+.blue   { background: #3b82f6; }
+.green  { background: #22c55e; }
+.purple { background: #a855f7; }
+.red    { background: #ef4444; }
+.orange { background: #f97316; }
+
+/* ─── BOTÓN GUARDAR ──────────────────────────────────────────────── */
+.btn-save {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: all 0.2s ease;
+    letter-spacing: 0.2px;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+}
+.btn-save:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+}
+.btn-save:active {
+    transform: translateY(0);
+}

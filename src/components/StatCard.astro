@@ -1,9 +1,9 @@
 ---
-const { label, value, iconColor } = Astro.props;
+const { label, value, color } = Astro.props;
 ---
 <div class="stat-card">
     <div class="stat-header">
-        <div class={`stat-dot ${iconColor}`}></div>
+        <div class={`stat-dot ${color}`}></div>
         <span class="stat-label">{label}</span>
     </div>
     <div class="stat-value">{value}</div>

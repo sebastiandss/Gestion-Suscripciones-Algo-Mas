@@ -1,5 +1,4 @@
 ---
-/* src/components/StatsSection.astro */
 import StatCard from './StatCard.astro';
 ---
 
@@ -7,13 +6,13 @@ import StatCard from './StatCard.astro';
     <div id="container-total-spent" class="stat-interactive">
         <StatCard label="Gastos Mensuales" value="$0.00" color="blue" />
     </div>
-    
+
     <div id="container-subs-count" style="flex:1">
-        <StatCard label="Suscripciones Activas" value="0" color="green" /> 
+        <StatCard label="Suscripciones Activas" value="0" color="green" />
     </div>
 
-    <div style="flex:1">
-        <StatCard label="Próximo Pago" value="Mar 25" color="purple" />
+    <div id="container-next-payment" style="flex:1">
+        <StatCard label="Próximo Pago" value="—" color="purple" />
     </div>
 
     <div id="container-budget-pct" style="flex:1">
@@ -22,50 +21,76 @@ import StatCard from './StatCard.astro';
 </div>
 
 <script>
-    import { $subscriptions, $budgets } from '../store/subsStore.js';
+    import { $subscriptions } from '../store/subscriptions';
+    import { $budgets } from '../store/budgets';
+
+    const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+    const getNextPayment = (subs: any[]) => {
+        const today = new Date();
+        let nextDate: Date | null = null;
+        let nextName = '—';
+
+        for (const sub of subs) {
+            if (!sub.date) continue;
+            const d = new Date(sub.date + 'T00:00:00');
+            if (isNaN(d.getTime())) continue;
+
+            const thisYear = new Date(today.getFullYear(), d.getMonth(), d.getDate());
+            if (thisYear < today) {
+                thisYear.setFullYear(today.getFullYear() + 1);
+            }
+
+            if (!nextDate || thisYear < nextDate) {
+                nextDate = thisYear;
+                nextName = sub.name;
+            }
+        }
+
+        return { date: nextDate, name: nextName };
+    };
 
     const updateUI = () => {
         const subs = $subscriptions.get();
         const budgets = $budgets.get();
-        
-        // Buscamos el último (el Total)
+
         const totalBudget = budgets[budgets.length - 1];
 
-        // SELECTORES CORREGIDOS: Buscamos la clase .stat-value que definiste en StatCard.astro
         const spentEl = document.querySelector('#container-total-spent .stat-value');
         const countEl = document.querySelector('#container-subs-count .stat-value');
+        const nextEl = document.querySelector('#container-next-payment .stat-value');
         const pctEl = document.querySelector('#container-budget-pct .stat-value');
 
-        // 1. Actualizar contador de suscripciones
         if (countEl) {
             countEl.textContent = subs.length.toString();
         }
 
-        // 2. Actualizar datos del presupuesto total
         if (totalBudget) {
             if (spentEl) {
-                // Forzamos que sea número para evitar errores de visualización
-                const currentSpent = parseFloat(totalBudget.currentSpent as any) || 0;
-                spentEl.textContent = `$${currentSpent.toFixed(2)}`;
+                spentEl.textContent = `$${totalBudget.currentSpent.toFixed(2)}`;
             }
 
             if (pctEl) {
-                const limit = parseFloat(totalBudget.limit as any) || 0;
-                const spent = parseFloat(totalBudget.currentSpent as any) || 0;
-                const percentage = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+                const percentage = totalBudget.limit > 0 ? Math.round((totalBudget.currentSpent / totalBudget.limit) * 100) : 0;
                 pctEl.textContent = `${percentage}%`;
+            }
+        }
+
+        if (nextEl) {
+            const { date, name } = getNextPayment(subs);
+            if (date) {
+                nextEl.textContent = `${name} · ${date.getDate()} ${MONTHS[date.getMonth()]}`;
+            } else {
+                nextEl.textContent = '—';
             }
         }
     };
 
-    // Escuchar cambios en los stores
     $subscriptions.subscribe(updateUI);
     $budgets.subscribe(updateUI);
 
-    // Carga inicial
     updateUI();
 
-    // Compatibilidad con View Transitions de Astro
     document.addEventListener('astro:after-swap', updateUI);
 </script>
 

@@ -1,0 +1,374 @@
+/* ─── CONTENEDOR BASE ────────────────────────────────────────────── */
+.subs-container {
+    width: 100%;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── LAYOUT GRID ────────────────────────────────────────────────── */
+.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+}
+
+/* ─── LAYOUT LISTA ───────────────────────────────────────────────── */
+.list-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ─── BOTÓN AGREGAR ──────────────────────────────────────────────── */
+.add-card-full {
+    background: rgba(255, 255, 255, 0.018);
+    border: 2px dashed rgba(255, 255, 255, 0.07);
+    border-radius: 24px;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    min-height: 190px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+.add-card-full::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+.add-card-full:hover::before { opacity: 1; }
+.add-card-full:hover {
+    border-color: rgba(59, 130, 246, 0.35);
+    background: rgba(59, 130, 246, 0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.08);
+}
+
+.list-layout .add-card-full {
+    flex-direction: row;
+    justify-content: flex-start;
+    min-height: 76px;
+    padding: 0 24px;
+}
+
+.plus-circle {
+    background: rgba(255, 255, 255, 0.05);
+    color: #555;
+    padding: 14px;
+    border-radius: 50%;
+    display: flex;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.add-card-full:hover .plus-circle {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+.add-card-full .text h3 {
+    color: #555;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 3px;
+    transition: color 0.3s;
+}
+.add-card-full .text p {
+    color: #3a3a3a;
+    font-size: 0.78rem;
+    margin: 0;
+    transition: color 0.3s;
+}
+.add-card-full:hover .text h3 { color: #7da9f5; }
+.add-card-full:hover .text p  { color: #4d7ac7; }
+
+/* ─── TARJETA DINÁMICA ───────────────────────────────────────────── */
+.flip-card.dynamic-item {
+    width: 100%;
+    position: relative;          /* necesario para z-index */
+    animation: cardIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+/* Cuando el dropdown está abierto, este card sube por encima del resto */
+.flip-card.dynamic-item.has-open-dropdown {
+    z-index: 50;
+}
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.detailed-card {
+    background: #1c1c1e;
+    padding: 22px 24px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    width: 100%;
+    transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+    position: relative;
+    /* NO overflow:hidden — el dropdown de estado necesita salir de la tarjeta */
+}
+.detailed-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.015) 0%, transparent 60%);
+    pointer-events: none;
+}
+.detailed-card:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: #222226;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* En grid: tarjetas con altura mínima y layout vertical */
+.grid-layout .detailed-card {
+    min-height: 120px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
+    position: relative;
+}
+.grid-layout .card-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    width: 100%;
+    padding-right: 32px;
+}
+.grid-layout .meta-info {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 8px;
+    text-align: left;
+}
+.grid-layout .delete-sub-btn {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    margin-left: 0;
+    z-index: 5;
+}
+
+/* En lista: compactos y horizontales */
+.list-layout .detailed-card {
+    padding: 14px 20px;
+    min-height: 0;
+}
+.list-layout .card-content {
+    gap: 14px;
+}
+.list-layout .meta-info {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+}
+.list-layout .date {
+    order: 0;
+}
+.list-layout .status-dropdown {
+    order: 1;
+    width: auto;
+    min-width: 100px;
+}
+.list-layout .text-info h3 {
+    font-size: 0.95rem;
+}
+.list-layout .text-info p {
+    font-size: 0.78rem;
+}
+
+/* ─── CONTENIDO DE TARJETA ───────────────────────────────────────── */
+.card-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+/* ─── ÍCONO DEL SERVICIO ─────────────────────────────────────────── */
+.service-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+}
+.service-icon.blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 4px 16px rgba(59,130,246,0.3); }
+.service-icon.green  { background: linear-gradient(135deg, #22c55e, #15803d); box-shadow: 0 4px 16px rgba(34,197,94,0.3); }
+.service-icon.purple { background: linear-gradient(135deg, #a855f7, #7e22ce); box-shadow: 0 4px 16px rgba(168,85,247,0.3); }
+.service-icon.red    { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 4px 16px rgba(239,68,68,0.3); }
+.service-icon.orange { background: linear-gradient(135deg, #f97316, #c2410c); box-shadow: 0 4px 16px rgba(249,115,22,0.3); }
+
+/* ─── INFO DE TEXTO ──────────────────────────────────────────────── */
+.text-info { display: flex; flex-direction: column; gap: 3px; }
+.text-info h3 {
+    color: #f0f0f0;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+}
+.text-info p {
+    color: #555;
+    margin: 0;
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ETIQUETA DE CATEGORÍA */
+.tag-label-simple {
+    display: inline-block;
+    font-size: 0.6rem;
+    color: #3a3a3a;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    margin-top: 5px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 2px 7px;
+}
+
+/* ─── META INFO ──────────────────────────────────────────────────── */
+.meta-info {
+    margin-left: auto;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
+
+/* ─── DROPDOWN DE ESTADO ─────────────────────────────────────────── */
+.status-dropdown {
+    position: relative;
+    width: 110px;
+}
+.badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    justify-content: center;
+    width: 100%;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.badge.activo  { background: rgba(34, 197, 94, 0.1);  color: #22c55e; border-color: rgba(34,197,94,0.15); }
+.badge.pausada { background: rgba(234, 179, 8, 0.1);  color: #eab308; border-color: rgba(234,179,8,0.15); }
+.badge.vencida { background: rgba(239, 68, 68, 0.1);  color: #ef4444; border-color: rgba(239,68,68,0.15); }
+.badge:hover   { filter: brightness(1.2); }
+
+.arrow { font-size: 9px; opacity: 0.5; transition: transform 0.2s ease; }
+.status-dropdown.is-open .arrow { transform: rotate(180deg); }
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;              /* alineado a la derecha del badge */
+    left: auto;
+    background: #252528;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.04);
+    display: none;
+    z-index: 9999;         /* siempre encima de todo */
+    min-width: 120px;
+    overflow: hidden;
+}
+@keyframes dropIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.status-dropdown.is-open .dropdown-menu { display: block; }
+
+.option {
+    padding: 10px 14px;
+    color: #888;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.option:last-child { border-bottom: none; }
+.option:hover { background: rgba(255, 255, 255, 0.06); color: white; }
+
+/* ─── FECHA ──────────────────────────────────────────────────────── */
+.date {
+    color: #404040;
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.3px;
+}
+
+/* ─── BOTÓN ELIMINAR ─────────────────────────────────────────────── */
+.delete-sub-btn {
+    background: transparent;
+    color: #333;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-left: 12px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.delete-sub-btn:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+    transform: scale(1.08);
+}
+
+/* ─── ESTADO VACÍO ───────────────────────────────────────────────── */
+.empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #333;
+    gap: 12px;
+    text-align: center;
+}
+.empty-state-icon { font-size: 3rem; opacity: 0.3; }
+.empty-state p { font-size: 0.95rem; color: #444; margin: 0; }
+.empty-state span { font-size: 0.78rem; color: #2e2e2e; }

@@ -2,29 +2,13 @@
     <div class="card main-chart">
         <div class="card-header">
             <span class="card-title">Diagrama de actividad</span>
-            <p class="card-subtitle" id="chart-subtitle">Distribución de gastos por fecha de pago</p>
+            <p class="card-subtitle" id="chart-subtitle">Haz clic en una barra para ver detalle</p>
         </div>
-        
-        <div class="chart-content-area">
-            <div class="bars-flex-box" id="chart-bars">
-                <div class="bar-item" data-idx="0"></div>
-                <div class="bar-item" data-idx="1"></div>
-                <div class="bar-item" data-idx="2"></div>
-                <div class="bar-item" data-idx="3"></div>
-                <div class="bar-item" data-idx="4"></div>
-                <div class="bar-item" data-idx="5"></div>
-                <div class="bar-item" data-idx="6"></div>
-            </div>
 
-            <div class="labels-row" id="labels-row">
-                <span>Ene</span>
-                <span>Feb</span>
-                <span>Mar</span>
-                <span>Abr</span>
-                <span>May</span>
-                <span>Jun</span>
-                <span>Jul</span>
-            </div>
+        <div class="chart-content-area">
+            <div class="bars-flex-box" id="chart-bars"></div>
+            <div class="labels-row" id="labels-row"></div>
+            <div class="month-detail" id="month-detail"></div>
         </div>
     </div>
 
@@ -33,58 +17,202 @@
             <span class="card-title">Próximos pagos</span>
             <p class="card-subtitle">Calendario de facturación</p>
         </div>
-        <div class="placeholder-content">PAGOS</div>
+        <div class="upcoming-list" id="upcoming-list">
+            <div class="placeholder-content">SIN PAGOS</div>
+        </div>
     </div>
 </div>
 
 <script>
-    import { $subscriptions } from '../store/subsStore.js';
+    import { $subscriptions } from '../store/subscriptions';
+    import { $budgets } from '../store/budgets';
+
+    const MONTHS_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const MONTHS_LONG = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+    let monthlyTotals = new Array(12).fill(0);
+    let monthlySubs = new Array(12).fill(null).map(() => []);
 
     const renderChart = () => {
         const subs = $subscriptions.get();
-        const bars = document.querySelectorAll('.bar-item');
-        const labels = document.querySelectorAll('.labels-row span');
-        const monthlyTotals = new Array(7).fill(0);
+        const barsContainer = document.getElementById('chart-bars');
+        const labelsContainer = document.getElementById('labels-row');
+
+        if (!barsContainer || !labelsContainer) return;
+
+        const today = new Date();
+        monthlyTotals = new Array(12).fill(0);
+        monthlySubs = new Array(12).fill(null).map(() => []);
 
         subs.forEach(sub => {
-            if (sub.date) {
-                // El "T00:00:00" previene errores de zona horaria
-                const monthIndex = new Date(sub.date + 'T00:00:00').getMonth();
-                if (monthIndex >= 0 && monthIndex <= 6) {
-                    monthlyTotals[monthIndex] += parseFloat(sub.price) || 0;
-                }
+            if (!sub.date) return;
+            const d = new Date(sub.date + 'T00:00:00');
+            if (isNaN(d.getTime())) return;
+
+            const monthsAgo = (today.getFullYear() - d.getFullYear()) * 12 + (today.getMonth() - d.getMonth());
+            if (monthsAgo >= 0 && monthsAgo < 12) {
+                const idx = 11 - monthsAgo;
+                monthlyTotals[idx] += parseFloat(sub.price) || 0;
+                monthlySubs[idx].push(sub);
             }
         });
 
-        const limit = Math.max(...monthlyTotals, 500);
-        const currentMonth = new Date().getMonth();
+        const totalSpent = monthlyTotals.reduce((a, b) => a + b, 0);
+        closeDetail();
 
-        bars.forEach((bar, i) => {
-            const total = monthlyTotals[i];
-            const height = (total / limit) * 100;
+        if (totalSpent === 0) {
+            barsContainer.innerHTML = `<div class="empty-chart">Sin datos de gastos este período</div>`;
+            labelsContainer.innerHTML = '';
+            return;
+        }
 
-            (bar as HTMLElement).style.setProperty('--h', `${Math.max(height, 2)}%`);
-            bar.setAttribute('data-val', `$${total.toFixed(2)}`);
+        const maxVal = Math.max(...monthlyTotals, 500);
 
-            bar.classList.toggle('has-data', total > 0);
-            bar.classList.toggle('is-current', i === currentMonth);
-            labels[i].classList.toggle('active-m', i === currentMonth);
+        barsContainer.innerHTML = monthlyTotals.map((total, i) => {
+            const monthIndex = (today.getMonth() - 11 + i + 12) % 12;
+            const isCurrent = i === 11;
+            return `<div class="bar-item" data-val="${MONTHS_SHORT[monthIndex]} - $${total.toFixed(2)}" data-idx="${i}" style="--h: 0;" data-active="${total > 0}" data-current="${isCurrent}"></div>`;
+        }).join('');
+
+        labelsContainer.innerHTML = monthlyTotals.map((_, i) => {
+            const monthIndex = (today.getMonth() - 11 + i + 12) % 12;
+            const isCurrent = i === 11;
+            return `<span class="${isCurrent ? 'active-m' : ''}" data-idx="${i}">${MONTHS_SHORT[monthIndex]}</span>`;
+        }).join('');
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const bars = barsContainer.querySelectorAll('.bar-item');
+                bars.forEach((bar, i) => {
+                    const total = monthlyTotals[i];
+                    const height = (total / maxVal) * 100;
+                    (bar).style.setProperty('--h', `${Math.max(height, 2)}%`);
+                });
+            });
         });
     };
 
-    // El .subscribe ya ejecuta la función la primera vez automáticamente
-    $subscriptions.subscribe(renderChart);
-    
-    // Solo para cuando cambias de página con ClientRouter
-    document.addEventListener('astro:after-swap', renderChart);
+    const showMonthDetail = (idx) => {
+        const detail = document.getElementById('month-detail');
+        if (!detail) return;
+
+        const subs = monthlySubs[idx] || [];
+        const total = monthlyTotals[idx] || 0;
+        const today = new Date();
+        const monthIndex = (today.getMonth() - 11 + idx + 12) % 12;
+        const monthName = MONTHS_LONG[monthIndex];
+
+        detail.innerHTML = `
+            <div class="month-detail-header">
+                <span class="month-detail-title">${monthName}</span>
+                <span class="month-detail-total">$${total.toFixed(2)}</span>
+                <button class="month-detail-close" id="month-detail-close">✕</button>
+            </div>
+            <div class="month-detail-list">
+                ${subs.length === 0
+                    ? '<div class="month-detail-empty">Sin suscripciones este mes</div>'
+                    : subs.map(sub => `
+                        <div class="month-detail-item">
+                            <div class="upcoming-icon ${sub.serviceClass || 'blue'}">${sub.name.charAt(0)}</div>
+                            <div class="month-detail-info">
+                                <span class="month-detail-name">${sub.name}</span>
+                                <span class="month-detail-tag">${sub.tag || 'General'}</span>
+                            </div>
+                            <span class="month-detail-price">$${parseFloat(sub.price).toFixed(2)}</span>
+                        </div>
+                    `).join('')
+                }
+            </div>
+        `;
+
+        requestAnimationFrame(() => {
+            detail.classList.add('month-detail-open');
+        });
+
+        document.getElementById('month-detail-close')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeDetail();
+        });
+    };
+
+    const closeDetail = () => {
+        const detail = document.getElementById('month-detail');
+        if (detail) {
+            detail.classList.remove('month-detail-open');
+        }
+    };
+
+    const renderUpcoming = () => {
+        const subs = $subscriptions.get();
+        const container = document.getElementById('upcoming-list');
+        if (!container) return;
+
+        const today = new Date();
+
+        const withNextDate = subs
+            .filter(s => s.date)
+            .map(s => {
+                const d = new Date(s.date + 'T00:00:00');
+                if (isNaN(d.getTime())) return null;
+                const next = new Date(today.getFullYear(), d.getMonth(), d.getDate());
+                if (next < today) next.setFullYear(today.getFullYear() + 1);
+                const daysUntil = Math.ceil((next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                return { ...s, nextDate: next, daysUntil };
+            })
+            .filter((s): s is any => s !== null)
+            .sort((a, b) => a.nextDate.getTime() - b.nextDate.getTime())
+            .slice(0, 5);
+
+        if (withNextDate.length === 0) {
+            container.innerHTML = `<div class="placeholder-content">SIN PAGOS</div>`;
+            return;
+        }
+
+        container.innerHTML = withNextDate.map(sub => {
+            let daysText = '';
+            if (sub.daysUntil === 0) daysText = 'hoy';
+            else if (sub.daysUntil === 1) daysText = 'mañana';
+            else if (sub.daysUntil <= 7) daysText = `en ${sub.daysUntil} días`;
+            else daysText = `${sub.nextDate.getDate()} ${MONTHS_SHORT[sub.nextDate.getMonth()]}`;
+            return `
+            <div class="upcoming-item">
+                <div class="upcoming-left">
+                    <div class="upcoming-icon ${sub.serviceClass || 'blue'}">${sub.name.charAt(0)}</div>
+                    <div class="upcoming-info">
+                        <span class="upcoming-name">${sub.name}</span>
+                        <span class="upcoming-date">${daysText} · ${sub.status || 'Activo'}</span>
+                    </div>
+                </div>
+                <span class="upcoming-price">$${parseFloat(sub.price).toFixed(2)}</span>
+            </div>
+        `}).join('');
+    };
+
+    const render = () => {
+        renderChart();
+        renderUpcoming();
+    };
+
+    $subscriptions.subscribe(render);
+    $budgets.subscribe(render);
+    document.addEventListener('astro:after-swap', render);
+
+    document.querySelector('.chart-content-area')?.addEventListener('click', (e) => {
+        const target = e.target;
+        if (target.closest('#month-detail')) return;
+        const bar = target.closest('.bar-item');
+        const label = target.closest('.labels-row span');
+        const idx = bar?.dataset.idx ?? label?.dataset.idx;
+        if (idx !== undefined) showMonthDetail(parseInt(idx));
+    });
 </script>
 
 <style>
     .dashboard-grid { display: flex; gap: 24px; width: 100%; }
-    
+
     .card {
         background-color: #222222; border-radius: 30px; padding: 30px;
-        display: flex; flex-direction: column; height: 320px;
+        display: flex; flex-direction: column; min-height: 320px;
         border: 1px solid rgba(255, 255, 255, 0.03); flex: 1;
     }
     .main-chart { flex: 6.5; }
@@ -96,39 +224,50 @@
 
     .bars-flex-box {
         display: flex; align-items: flex-end; justify-content: space-between;
-        gap: 15px; height: 160px; padding: 0 10px;
+        gap: 8px; height: 160px; padding: 0 5px;
     }
 
     .bar-item {
         flex: 1;
         height: var(--h, 2%);
-        background: rgba(255, 255, 255, 0.02); /* Color base vacio */
-        border-radius: 8px 8px 3px 3px;
-        transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 6px 6px 2px 2px;
+        transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s, transform 0.2s;
         position: relative;
+        transform-origin: bottom;
     }
 
-    /* Barra con datos (Cualquier mes con suscripciones) */
-    .has-data {
+    .bar-item[data-active="true"] {
         background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
     }
 
-    /* Brillo extra si es el mes actual */
-    .is-current.has-data {
+    .bar-item[data-current="true"][data-active="true"] {
         filter: saturate(1.5);
         box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
     }
 
     .bar-item:hover {
-        filter: brightness(1.2);
+        filter: brightness(1.3);
+        transform: scaleY(1.02);
+        z-index: 2;
+    }
+
+    .empty-chart {
+        width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center;
+        color: #444; font-weight: 700; font-size: 0.85rem;
+        letter-spacing: 1px; border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px dashed rgba(255, 255, 255, 0.06);
     }
 
     .bar-item:hover::after {
         content: attr(data-val);
-        position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
-        background: #333; color: white; padding: 5px 10px; border-radius: 8px;
+        position: absolute; top: -38px; left: 50%; transform: translateX(-50%);
+        background: #2a2a2a; color: white; padding: 6px 12px; border-radius: 8px;
         font-size: 0.75rem; font-weight: 700; white-space: nowrap;
         z-index: 10; border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
 
     .labels-row {
@@ -137,18 +276,126 @@
     }
 
     .labels-row span {
-        flex: 1; text-align: center; font-size: 0.7rem; color: #444;
+        flex: 1; text-align: center; font-size: 0.65rem; color: #444;
         font-weight: 800; text-transform: uppercase;
     }
 
     .active-m { color: #3b82f6 !important; }
 
+    .labels-row span { cursor: pointer; }
+    .labels-row span:hover { color: #666; }
+
+    .month-detail {
+        max-height: 0; opacity: 0; overflow: hidden;
+        transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease;
+        margin-top: 0;
+    }
+    .month-detail-open {
+        max-height: 400px; opacity: 1;
+        margin-top: 15px;
+    }
+    .month-detail-header {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 14px; border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        margin-bottom: 10px;
+    }
+    .month-detail-title {
+        font-size: 0.85rem; font-weight: 700; color: white;
+    }
+    .month-detail-total {
+        font-size: 0.8rem; font-weight: 700; color: #3b82f6;
+        margin-left: auto;
+    }
+    .month-detail-close {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        color: #555; width: 28px; height: 28px; border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all 0.2s ease;
+        padding: 0; font-size: 0.75rem; flex-shrink: 0;
+    }
+    .month-detail-close:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444; border-color: rgba(239, 68, 68, 0.2);
+    }
+    .month-detail-list {
+        display: flex; flex-direction: column; gap: 6px;
+    }
+    .month-detail-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 8px 10px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        transition: background 0.2s;
+    }
+    .month-detail-item:hover { background: rgba(255, 255, 255, 0.05); }
+    .month-detail-info {
+        display: flex; flex-direction: column; gap: 1px; flex: 1;
+        min-width: 0;
+    }
+    .month-detail-name {
+        font-size: 0.8rem; font-weight: 600; color: #eee;
+    }
+    .month-detail-tag {
+        font-size: 0.6rem; color: #555; font-weight: 500;
+    }
+    .month-detail-price {
+        font-size: 0.8rem; font-weight: 700; color: white;
+        font-variant-numeric: tabular-nums; flex-shrink: 0;
+    }
+    .month-detail-empty {
+        padding: 20px; text-align: center;
+        color: #444; font-size: 0.75rem; font-weight: 600;
+    }
+    .month-detail-item .upcoming-icon {
+        width: 30px; height: 30px; font-size: 0.75rem;
+    }
+
     .card-title { font-size: 1.1rem; font-weight: 600; color: white; }
     .card-subtitle { font-size: 0.8rem; color: #555; margin-top: 5px; }
 
-    .placeholder-content { 
-        flex: 1; border-radius: 22px; background: rgba(0, 0, 0, 0.2); 
-        display: flex; align-items: center; justify-content: center; 
-        margin-top: 20px; color: #333; font-weight: 800; font-size: 0.7rem; letter-spacing: 2px; 
+    .placeholder-content {
+        flex: 1; border-radius: 22px; background: rgba(0, 0, 0, 0.2);
+        display: flex; align-items: center; justify-content: center;
+        color: #333; font-weight: 800; font-size: 0.7rem; letter-spacing: 2px;
     }
+
+    .upcoming-list {
+        flex: 1; display: flex; flex-direction: column; gap: 10px; margin-top: 18px;
+        overflow-y: auto; scrollbar-width: none;
+    }
+    .upcoming-list::-webkit-scrollbar { display: none; }
+
+    .upcoming-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 14px; background: rgba(255, 255, 255, 0.02);
+        border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.04);
+        transition: all 0.2s ease;
+    }
+    .upcoming-item:hover {
+        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateX(4px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .upcoming-left { display: flex; align-items: center; gap: 12px; }
+    .upcoming-icon {
+        width: 36px; height: 36px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.9rem; color: white; flex-shrink: 0;
+    }
+    .upcoming-icon.blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .upcoming-icon.green  { background: linear-gradient(135deg, #22c55e, #15803d); }
+    .upcoming-icon.purple { background: linear-gradient(135deg, #a855f7, #7e22ce); }
+    .upcoming-icon.red    { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .upcoming-icon.orange { background: linear-gradient(135deg, #f97316, #c2410c); }
+
+    .upcoming-info { display: flex; flex-direction: column; gap: 2px; }
+    .upcoming-name { font-size: 0.85rem; font-weight: 600; color: #eee; }
+    .upcoming-date { font-size: 0.65rem; color: #555; }
+    .upcoming-price { font-size: 0.85rem; font-weight: 700; color: white; font-variant-numeric: tabular-nums; }
 </style>

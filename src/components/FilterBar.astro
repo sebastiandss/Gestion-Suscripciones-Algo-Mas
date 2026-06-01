@@ -15,9 +15,9 @@ import ViewControls from './ViewControls.astro';
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             <input type="text" placeholder="Buscar suscripción..." id="sub-search" />
         </div>
-        
+
         <div class="vertical-divider"></div>
-        
+
         <div class="controls-wrapper">
             <ViewControls />
         </div>
@@ -25,57 +25,57 @@ import ViewControls from './ViewControls.astro';
 </div>
 
 <script>
+    let _onRender: (() => void) | null = null;
+
     const setupFilters = () => {
         const filterContainer = document.getElementById('status-filter-group');
         const searchInput = document.getElementById('sub-search') as HTMLInputElement;
-        
+
         if (!filterContainer) return;
 
         const buttons = filterContainer.querySelectorAll('.filter-btn');
 
+        if (_onRender) {
+            window.removeEventListener('subs-renderizadas', _onRender);
+        }
+
         const applyFilters = () => {
             const activeStatus = filterContainer.querySelector('.filter-btn.active')?.getAttribute('data-status') || 'todos';
             const searchText = searchInput?.value.toLowerCase() || '';
-            
+
             const cards = document.querySelectorAll('.flip-card.dynamic-item');
 
             cards.forEach(card => {
                 const name = card.querySelector('h3')?.textContent?.toLowerCase() || '';
-                // Obtenemos el texto del badge y lo limpiamos
                 const statusBadge = card.querySelector('.badge')?.textContent?.toLowerCase().trim() || '';
-                
-                // CORRECCIÓN AQUÍ:
-                // Usamos una lógica que entienda que "pausado" (botón) matchea con "pausada" (badge)
+
                 let matchesStatus = false;
-                
+
                 if (activeStatus === 'todos') {
                     matchesStatus = true;
                 } else {
-                    // Si el badge empieza por la raíz de la palabra (pausad, vencid, activ)
-                    // evitaremos el problema de la "o" vs la "a".
-                    const root = activeStatus.slice(0, -1); // quita la última letra
+                    const root = activeStatus.slice(0, -1);
                     matchesStatus = statusBadge.includes(root);
                 }
 
                 const matchesSearch = name.includes(searchText);
 
-                if (matchesStatus && matchesSearch) {
-                    (card as HTMLElement).style.display = 'block';
-                } else {
-                    (card as HTMLElement).style.display = 'none';
-                }
+                (card as HTMLElement).style.display = (matchesStatus && matchesSearch) ? '' : 'none';
             });
         };
 
+        _onRender = applyFilters;
+        window.addEventListener('subs-renderizadas', _onRender);
+
         buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.onclick = () => {
                 buttons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 applyFilters();
-            });
+            };
         });
 
-        searchInput?.addEventListener('input', applyFilters);
+        searchInput.oninput = applyFilters;
     };
 
     setupFilters();
@@ -88,7 +88,7 @@ import ViewControls from './ViewControls.astro';
         justify-content: space-between;
         align-items: center;
         background: rgba(255, 255, 255, 0.02);
-        padding: 8px 12px;
+        padding: 10px 20px;
         border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.05);
         margin-bottom: 35px;
@@ -126,6 +126,7 @@ import ViewControls from './ViewControls.astro';
     .actions-group {
         display: flex;
         align-items: center;
+        gap: 20px;
     }
 
     .search-container {
@@ -162,43 +163,11 @@ import ViewControls from './ViewControls.astro';
         width: 1px;
         height: 24px;
         background: rgba(255, 255, 255, 0.1);
-        margin: 0 15px;
+        margin: 0 10px;
     }
 
     .controls-wrapper {
-        margin-left: 5px;
-    }
-    .filter-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.02);
-        /* Aumentamos el padding lateral para que el contenido no toque los bordes */
-        padding: 10px 20px; 
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        margin-bottom: 35px;
-        backdrop-filter: blur(10px);
-    }
-
-    .actions-group {
-        display: flex;
-        align-items: center;
-        /* Separación general entre buscador, divisor y controles */
-        gap: 20px; 
-    }
-
-    .vertical-divider {
-        width: 1px;
-        height: 24px;
-        background: rgba(255, 255, 255, 0.1);
-        /* Esto aleja el buscador de la línea y la línea de los botones */
-        margin: 0 10px; 
-    }
-
-    .controls-wrapper {
-        /* Un pequeño margen extra a la derecha para que no quede pegado al final de la barra */
-        margin-right: 5px; 
+        margin-right: 5px;
         display: flex;
         align-items: center;
     }

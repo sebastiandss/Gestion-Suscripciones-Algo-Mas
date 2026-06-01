@@ -24,33 +24,33 @@
 </div>
 
 <script>
-    import { $subscriptions } from '../store/subsStore.js';
+    import { $subscriptions } from '../store/subscriptions';
 
     const setupCarousel = () => {
         const track = document.getElementById('track') as HTMLElement;
         const container = document.getElementById('dynamic-subs-container');
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn') as HTMLElement;
+        const prevBtn = document.getElementById('prevBtn') as HTMLElement;
         const inlineAddBtn = document.getElementById('inline-add-btn');
 
         let currentPos = 0;
         const step = 260;
 
-        inlineAddBtn?.addEventListener('click', () => {
+        if (inlineAddBtn) inlineAddBtn.onclick = () => {
             document.getElementById('modal-overlay')?.classList.add('is-active');
-        });
+        };
 
-        nextBtn?.addEventListener('click', () => {
+        if (nextBtn) nextBtn.onclick = () => {
             if (!track) return;
             const max = -(track.scrollWidth - track.parentElement!.clientWidth);
             currentPos = Math.max(currentPos - step, max);
             track.style.transform = `translateX(${currentPos}px)`;
-        });
+        };
 
-        prevBtn?.addEventListener('click', () => {
+        if (prevBtn) prevBtn.onclick = () => {
             currentPos = Math.min(currentPos + step, 0);
             track.style.transform = `translateX(${currentPos}px)`;
-        });
+        };
 
         $subscriptions.subscribe((subs: any[]) => {
             if (!container) return;

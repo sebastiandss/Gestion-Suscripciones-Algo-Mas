@@ -1,0 +1,84 @@
+---
+/* src/components/AddSubscriptionModal/AddSubscriptionModal.astro */
+import './AddSubscriptionModal.css';
+---
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Nueva Suscripción</h2>
+      <button id="close-modal" class="close-btn" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-form" id="sub-form">
+      <div class="input-group">
+        <label>Nombre del servicio</label>
+        <input type="text" placeholder="Ej. Netflix, Spotify..." id="sub-name" required />
+      </div>
+
+      <div class="input-group">
+        <label>Etiqueta (Categoría)</label>
+        <input 
+          type="text" 
+          id="sub-tag" 
+          list="categories-list" 
+          placeholder="Escribe o selecciona..." 
+        />
+        <datalist id="categories-list">
+          <option value="Entretenimiento"></option>
+          <option value="Streaming"></option>
+          <option value="Trabajo"></option>
+          <option value="Servicios"></option>
+          <option value="Salud"></option>
+          <option value="Videojuegos"></option>
+          <option value="Música"></option>
+        </datalist>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label>Precio</label>
+          <input type="text" placeholder="$0.00" id="sub-price" required />
+        </div>
+        <div class="input-group">
+          <label>Fecha de pago</label>
+          <input type="date" id="sub-date" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Color de marca</label>
+        <div class="color-picker">
+            <label class="color-option">
+              <input type="radio" name="color" value="blue" checked />
+              <span class="dot blue"></span>
+            </label>
+            <label class="color-option">
+              <input type="radio" name="color" value="green" />
+              <span class="dot green"></span>
+            </label>
+            <label class="color-option">
+              <input type="radio" name="color" value="purple" />
+              <span class="dot purple"></span>
+            </label>
+            <label class="color-option">
+              <input type="radio" name="color" value="red" />
+              <span class="dot red"></span>
+            </label>
+            <label class="color-option">
+              <input type="radio" name="color" value="orange" />
+              <span class="dot orange"></span>
+            </label>
+        </div>
+      </div>
+
+      <button type="button" class="btn-save" id="save-sub-btn">Guardar suscripción</button>
+    </form>
+  </div>
+</div>
+
+<script src="./AddSubscriptionModal.client.ts"></script>

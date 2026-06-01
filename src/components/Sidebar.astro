@@ -65,7 +65,7 @@ const currentPath = pathname.slice(1).replace(/\/$/, "");
 </aside>
 
 <script>
-    import { $subscriptions } from '../store/subsStore.js';
+    import { $subscriptions } from '../store/subscriptions';
     const updateBadge = () => {
         const badge = document.getElementById('subs-count-badge');
         $subscriptions.subscribe(subs => {

@@ -25,11 +25,9 @@
 
         // 2. Lógica del botón (Moverla AQUÍ adentro es la clave)
         const openModalBtn = document.getElementById('open-modal');
-        
-        // Eliminamos cualquier listener previo para no duplicar y agregamos el nuevo
-        openModalBtn?.addEventListener('click', () => {
+        if (openModalBtn) openModalBtn.onclick = () => {
             window.dispatchEvent(new CustomEvent('abrir-modal-suscripcion'));
-        });
+        };
     };
 
     // Ejecutar al cargar la primera vez
